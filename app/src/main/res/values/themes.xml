@@ -6,4 +6,10 @@
     </style>
 
     <style name="Theme.Nearbyshops" parent="Base.Theme.Nearbyshops" />
+    
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/repsol_logo</item>
+        <item name="postSplashScreenTheme">@style/Base.Theme.Nearbyshops</item>
+    </style>
 </resources>
