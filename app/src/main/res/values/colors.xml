@@ -3,4 +3,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="backgroundSplashScreen">#392943</color>
+
+    <color name="colorCardOnTap">#2B0470</color>
+    <color name="colorCardTextOnTap">#FFFFFFFF</color>
+    <color name="colorCardNoTap">#FFFFFFFF</color>
+    <color name="colorCardTitleNoTap">#F36113</color>
+    <color name="colorCardTextNoTap">#4E4D4C</color>
 </resources>

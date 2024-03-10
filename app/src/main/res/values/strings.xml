@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Nearby-shops</string>
+    <string name="listado_de_comercios">Listado de comercios</string>
+    <string name="comercios">Comercios</string>
+    <string name="a_menos_de_1_km">A menos de 1 Km</string>
 </resources>
