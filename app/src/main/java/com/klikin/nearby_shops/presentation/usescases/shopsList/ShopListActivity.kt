@@ -7,7 +7,6 @@ import androidx.lifecycle.lifecycleScope
 import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.databinding.ShopListScreenBinding
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.CategoryAdapter
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class ShopListActivity : AppCompatActivity() {
@@ -34,7 +33,7 @@ class ShopListActivity : AppCompatActivity() {
             viewModel.sate.collect { state ->
                 viewModel.loadCategories()
                 card1Title.text = state.shopList.size.toString()
-                binding.recyclerViewCategories.adapter = CategoryAdapter(state.categories)
+                binding.recyclerViewCategories.adapter = CategoryAdapter(state.categoriesMap)
             }
         }
 

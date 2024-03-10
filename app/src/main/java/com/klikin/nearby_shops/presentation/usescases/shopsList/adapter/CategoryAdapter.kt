@@ -5,7 +5,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.klikin.nearby_shops.databinding.ItemCategoryBinding
 
-class CategoryAdapter(private val categories: List<String>) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
+class CategoryAdapter(private val categories: MutableMap<String, Int>) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
+    val categoriesList: List<Map.Entry<String, Int>> = categories.entries.toList()
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -18,27 +20,17 @@ class CategoryAdapter(private val categories: List<String>) : RecyclerView.Adapt
         holder: CategoryViewHolder,
         position: Int,
     ) {
-        val category = categories[position]
+        val category: Map.Entry<String, Int> = categoriesList[position]
         holder.bind(category)
     }
 
     override fun getItemCount() = categories.size
 
     class CategoryViewHolder(private val binding: ItemCategoryBinding) : RecyclerView.ViewHolder(binding.root) {
-        val rainbowColorsArgb =
-            listOf(
-                0xFFFF0000.toInt(), // Rojo
-                0xFFFFA500.toInt(), // Naranja
-                0xFF8B4513.toInt(), // Marrón
-                0xFF008000.toInt(), // Verde
-                0xFF0000FF.toInt(), // Azul
-                0xFF4B0082.toInt(), // Índigo
-                0xFFEE82EE.toInt(), // Violeta
-            )
-
-        fun bind(category: String) {
-            binding.categoryText.text = category
-            binding.categoryText.setTextColor(rainbowColorsArgb[adapterPosition % rainbowColorsArgb.size])
+        fun bind(category: Map.Entry<String, Int>) {
+            binding.categoryText.text = category.key
+            // binding.categoryText.setTextColor(rainbowColorsArgb[adapterPosition % rainbowColorsArgb.size])
+            binding.categoryText.setTextColor(category.value)
         }
     }
 }

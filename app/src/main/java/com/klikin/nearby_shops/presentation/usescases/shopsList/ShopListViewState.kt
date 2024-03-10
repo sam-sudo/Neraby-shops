@@ -4,6 +4,6 @@ import com.klikin.nearby_shops.domain.model.Store
 
 data class ShopListViewState(
     val shopList: List<Store> = listOf(),
-    val categories: List<String> = listOf(),
+    val categoriesMap: MutableMap<String, Int> = mutableMapOf(),
     val isLoading: Boolean = false,
 )

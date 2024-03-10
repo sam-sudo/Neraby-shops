@@ -10,6 +10,17 @@ class ShopListViewModel : ViewModel() {
     private val _state = MutableStateFlow(ShopListViewState())
     val sate = _state.asStateFlow()
 
+    val rainbowColorsArgb =
+        listOf(
+            0xFFFF0000.toInt(), // Rojo
+            0xFFFFA500.toInt(), // Naranja
+            0xFF8B4513.toInt(), // Marrón
+            0xFF008000.toInt(), // Verde
+            0xFF0000FF.toInt(), // Azul
+            0xFF4B0082.toInt(), // Índigo
+            0xFFEE82EE.toInt(), // Violeta
+        )
+
     fun loadShops() {
         _state.update {
             it.copy(shopList = storeList)
@@ -17,7 +28,16 @@ class ShopListViewModel : ViewModel() {
     }
 
     fun loadCategories() {
-        val categoriesSet = _state.value.shopList.map { it.category }.toSet()
-        _state.update { it.copy(categories = categoriesSet.toList()) }
+        val colors = rainbowColorsArgb
+        val uniqueCategories = _state.value.shopList.map { it.category }.toSet()
+        val categoriesMap = mutableMapOf<String, Int>()
+
+        uniqueCategories.forEachIndexed { index, category ->
+            val colorIndex = index % colors.size
+            val color = colors[colorIndex]
+            categoriesMap[category] = color
+        }
+
+        _state.update { it.copy(categoriesMap = categoriesMap) }
     }
 }
