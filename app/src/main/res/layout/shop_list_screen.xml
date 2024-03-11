@@ -119,18 +119,14 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_category" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="8pt"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewShops"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="16pt"
+            android:padding="8pt"
             android:orientation="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_Shop" />
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     </LinearLayout>
 

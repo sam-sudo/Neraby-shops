@@ -29,7 +29,6 @@ class CategoryAdapter(private val categories: MutableMap<String, Int>) : Recycle
     class CategoryViewHolder(private val binding: ItemCategoryBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(category: Map.Entry<String, Int>) {
             binding.categoryText.text = category.key
-            // binding.categoryText.setTextColor(rainbowColorsArgb[adapterPosition % rainbowColorsArgb.size])
             binding.categoryText.setTextColor(category.value)
         }
     }

@@ -20,6 +20,7 @@ val storeList =
                 ),
             category = "GAS_STATION",
             location = listOf(-8.56325707f, 42.63235821f),
+            openingHours = "De Lunes a Viernes de 09:00 a 14:00 horas; De Lunes a Viernes de 16:30 a 20:00 horas; Sábado de 09:00 a 14:00 horas",
         ),
         Store(
             id = 1,
@@ -36,6 +37,7 @@ val storeList =
                 ),
             category = "GAS_STATION",
             location = listOf(-0.79821901f, 40.8313676f),
+            openingHours = "De Lunes a Viernes de 08:30 a 13:30 horas; De Lunes a Viernes de 15:30 a 19:30 horas; Sábado de 08:30 a 13:30 horas",
         ),
         Store(
             id = 2,
@@ -52,6 +54,7 @@ val storeList =
                 ),
             category = "Categoría 2",
             location = listOf(0.0f, 0.0f),
+            openingHours = "Horario de la tienda 2 aquí",
         ),
         Store(
             id = 3,
@@ -68,6 +71,7 @@ val storeList =
                 ),
             category = "Categoría 3",
             location = listOf(0.0f, 0.0f),
+            openingHours = "Horario de la tienda 3 aquí",
         ),
         Store(
             id = 4,
@@ -84,6 +88,7 @@ val storeList =
                 ),
             category = "Categoría 4",
             location = listOf(0.0f, 0.0f),
+            openingHours = "Horario de la tienda 4 aquí",
         ),
         Store(
             id = 5,
@@ -100,6 +105,7 @@ val storeList =
                 ),
             category = "Categoría 5",
             location = listOf(0.0f, 0.0f),
+            openingHours = "Horario de la tienda 5 aquí",
         ),
         Store(
             id = 6,
@@ -116,6 +122,7 @@ val storeList =
                 ),
             category = "Categoría 6",
             location = listOf(0.0f, 0.0f),
+            openingHours = "Horario de la tienda 6 aquí",
         ),
         Store(
             id = 7,
@@ -132,6 +139,7 @@ val storeList =
                 ),
             category = "Categoría 7",
             location = listOf(0.0f, 0.0f),
+            openingHours = "Horario de la tienda 7 aquí",
         ),
         Store(
             id = 8,
@@ -148,6 +156,7 @@ val storeList =
                 ),
             category = "Categoría 8",
             location = listOf(0.0f, 0.0f),
+            openingHours = "Horario de la tienda 8 aquí",
         ),
         Store(
             id = 9,
@@ -164,5 +173,6 @@ val storeList =
                 ),
             category = "Categoría 9",
             location = listOf(0.0f, 0.0f),
+            openingHours = "Horario de la tienda 9 aquí",
         ),
     )

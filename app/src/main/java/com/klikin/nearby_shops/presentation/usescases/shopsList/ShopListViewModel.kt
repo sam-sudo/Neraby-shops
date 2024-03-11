@@ -13,18 +13,19 @@ class ShopListViewModel : ViewModel() {
 
     val rainbowColorsArgb =
         listOf(
-            0xFFFF0000.toInt(), // Rojo
-            0xFFFFA500.toInt(), // Naranja
-            0xFF8B4513.toInt(), // Marrón
-            0xFF008000.toInt(), // Verde
-            0xFF0000FF.toInt(), // Azul
-            0xFF4B0082.toInt(), // Índigo
-            0xFFEE82EE.toInt(), // Violeta
+            0xFFE67E22.toInt(),
+            0xFFF1C40F.toInt(),
+            0xFF2ECC71.toInt(),
+            0xFFD35400.toInt(),
+            0xFF1ABC9C.toInt(),
+            0xFF2980B9.toInt(),
+            0xFF9B59B6.toInt(),
+            0xFFCB4335.toInt(),
         )
 
     fun loadShops() {
         val storeListOrderedBycloseness =
-            sortByDistanceToUser(storeList, listOf(37.168476142495834F, -3.6040761719512906F))
+            sortByDistanceToUser(storeList, getLocation())
         _state.update {
             it.copy(shopList = storeListOrderedBycloseness)
         }
@@ -60,5 +61,9 @@ class ShopListViewModel : ViewModel() {
         val deltaX = location1[0] - location2[0]
         val deltaY = location1[1] - location2[1]
         return kotlin.math.sqrt(deltaX * deltaX + deltaY * deltaY)
+    }
+
+    fun getLocation(): List<Float> {
+        return listOf(37.168476142495834F, -3.6040761719512906F)
     }
 }
