@@ -1,5 +1,6 @@
 package com.klikin.nearby_shops.presentation.usescases.shopsList
 
+import android.location.Location
 import androidx.lifecycle.ViewModel
 import com.klikin.nearby_shops.data.local.storeList
 import com.klikin.nearby_shops.domain.model.Store
@@ -24,10 +25,24 @@ class ShopListViewModel : ViewModel() {
         )
 
     fun loadShops() {
-        val storeListOrderedBycloseness =
+        val storeListOrderedByCloseness =
             sortByDistanceToUser(storeList, getLocation())
         _state.update {
-            it.copy(shopList = storeListOrderedBycloseness)
+            it.copy(shopList = storeListOrderedByCloseness)
+        }
+    }
+
+    fun loadShopsByCategory(categorySelected: String) {
+        val categories = _state.value.categoriesMap.keys
+        if (categories.contains(categorySelected)) {
+            val storeListByCategory = storeList.filter { it.category == categorySelected }
+
+            val storeListOrderedByCloseness =
+                sortByDistanceToUser(storeListByCategory, getLocation())
+
+            _state.update {
+                it.copy(shopList = storeListOrderedByCloseness)
+            }
         }
     }
 
@@ -47,23 +62,27 @@ class ShopListViewModel : ViewModel() {
 
     fun sortByDistanceToUser(
         storeList: List<Store>,
-        userLocation: List<Float>,
+        userLocation: List<Double>,
     ): List<Store> {
         return storeList.sortedBy { store ->
-            distanceBetweenPoints(store.location!!, userLocation)
+            val location = store.location
+            if (location != null && location.isNotEmpty()) {
+                val results = FloatArray(1)
+                Location.distanceBetween(
+                    location[0],
+                    location[1],
+                    userLocation[0],
+                    userLocation[1],
+                    results,
+                )
+                results[0]
+            } else {
+                Float.MAX_VALUE
+            }
         }
     }
 
-    fun distanceBetweenPoints(
-        location1: List<Float>,
-        location2: List<Float>,
-    ): Float {
-        val deltaX = location1[0] - location2[0]
-        val deltaY = location1[1] - location2[1]
-        return kotlin.math.sqrt(deltaX * deltaX + deltaY * deltaY)
-    }
-
-    fun getLocation(): List<Float> {
-        return listOf(37.168476142495834F, -3.6040761719512906F)
+    fun getLocation(): List<Double> {
+        return listOf(37.168476142495834, -3.6040761719512906)
     }
 }

@@ -1,7 +1,6 @@
 package com.klikin.nearby_shops.presentation.usescases.shopsList.adapter
 
 import android.net.Uri
-import android.provider.Settings.Global.getString
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -10,6 +9,7 @@ import com.klikin.nearby_shops.data.mapper.openHoursLittleFormat
 import com.klikin.nearby_shops.databinding.ItemStoreBinding
 import com.klikin.nearby_shops.domain.model.Store
 import com.klikin.nearby_shops.presentation.usescases.shopsList.ShopListViewState
+import com.klikin.nearby_shops.presentation.utils.LocationHandler
 
 class ShopAdapter(
     private val state: ShopListViewState,
@@ -56,26 +56,17 @@ class ShopAdapter(
             }
 
             try {
-                val distance = distanceBetweenPoints(store.location!!, getLocation()).toString()
-                val distanceText =
-                    binding.root.context.getString(R.string.distance_format, distance)
-                binding.tvDistance.text = distanceText
+                val distance =
+                    LocationHandler.distanceBetweenPositionNowAndPoint(
+                        (store.location?.get(0) ?: 0) as Double,
+                        (store.location?.get(1) ?: 0) as Double,
+                    )
+
+                val distanceText = distance
+                binding.tvDistance.text = String.format("%.2fm.", distanceText)
             } catch (e: Exception) {
                 binding.tvDistance.text = "UNKNOWN m."
             }
-        }
-
-        fun distanceBetweenPoints(
-            location1: List<Float>,
-            location2: List<Float>,
-        ): Float {
-            val deltaX = location1[0] - location2[0]
-            val deltaY = location1[1] - location2[1]
-            return kotlin.math.sqrt(deltaX * deltaX + deltaY * deltaY)
-        }
-
-        fun getLocation(): List<Float> {
-            return listOf(37.168476142495834F, -3.6040761719512906F)
         }
     }
 }

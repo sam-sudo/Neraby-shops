@@ -8,7 +8,7 @@ data class Store(
     val address: Address? = null,
     val openingHours: String = UNKNOWN_TEXT,
     val category: String = UNKNOWN_TEXT,
-    val location: List<Float>? = null,
+    val location: List<Double>? = null,
 )
 
 const val UNKNOWN_TEXT = "Unknown"

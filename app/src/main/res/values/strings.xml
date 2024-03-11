@@ -3,5 +3,4 @@
     <string name="listado_de_comercios">Listado de comercios</string>
     <string name="comercios">Comercios</string>
     <string name="a_menos_de_1_km">A menos de 1 Km</string>
-    <string name="distance_format">%1\$dm</string>
 </resources>

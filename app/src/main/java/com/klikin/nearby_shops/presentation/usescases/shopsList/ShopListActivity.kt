@@ -1,6 +1,7 @@
 package com.klikin.nearby_shops.presentation.usescases.shopsList
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -28,17 +29,30 @@ class ShopListActivity : AppCompatActivity() {
         val card2Title = binding.tvShopLengthNear
         val card2Text = binding.tvShopNearText
 
-        viewModel.loadShops()
+        val categoriesRecyclerView = binding.recyclerViewCategories
+        var adapter = CategoryAdapter(mutableMapOf())
 
+        viewModel.loadShops()
+        viewModel.loadCategories()
+        adapter.setOnItemClickListener(
+            object : CategoryAdapter.onItemClickListener {
+                override fun onItemClick(position: Int) {
+                    val selectedCategory = viewModel.sate.value.categoriesMap.keys.toList()[position]
+                    Log.d("TAG", "ITEM TOUCHED -> $selectedCategory")
+                    viewModel.loadShopsByCategory(selectedCategory)
+                }
+            },
+        )
+        adapter.updateData(viewModel.sate.value.categoriesMap)
+        categoriesRecyclerView.adapter = adapter
         lifecycleScope.launch {
             viewModel.sate.collect { state ->
-                viewModel.loadCategories()
                 card1Title.text = state.shopList.size.toString()
-                binding.recyclerViewCategories.adapter = CategoryAdapter(state.categoriesMap)
                 binding.recyclerViewShops.adapter = ShopAdapter(state)
             }
         }
 
+        // Cards
         card1.setOnClickListener {
             card1.background.setTint(ContextCompat.getColor(this, R.color.colorCardOnTap))
             card1Title.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
