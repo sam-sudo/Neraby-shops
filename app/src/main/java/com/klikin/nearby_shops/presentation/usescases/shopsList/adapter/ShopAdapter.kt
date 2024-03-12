@@ -1,6 +1,9 @@
 package com.klikin.nearby_shops.presentation.usescases.shopsList.adapter
 
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -8,8 +11,11 @@ import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.data.mapper.openHoursLittleFormat
 import com.klikin.nearby_shops.databinding.ItemStoreBinding
 import com.klikin.nearby_shops.domain.model.Store
+import com.klikin.nearby_shops.framework.LocationService
 import com.klikin.nearby_shops.presentation.usescases.shopsList.ShopListViewState
-import com.klikin.nearby_shops.presentation.utils.LocationHandler
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class ShopAdapter(
     private var state: ShopListViewState,
@@ -44,6 +50,9 @@ class ShopAdapter(
     ) : RecyclerView.ViewHolder(
             binding.root,
         ) {
+        private val locationService = LocationService()
+        private var job: Job? = null
+
         fun bind(store: Store) {
             val colorBlanco = 0xFFFFFFFF.toInt()
             val backGroundColor: Int = state.categoriesMap[store.category] ?: colorBlanco
@@ -58,18 +67,26 @@ class ShopAdapter(
                 binding.imgvShopImg.setImageResource(R.drawable.no_image)
             }
 
-            try {
-                val distance =
-                    LocationHandler.distanceBetweenPositionNowAndPoint(
-                        (store.location?.get(0) ?: 0) as Double,
-                        (store.location?.get(1) ?: 0) as Double,
-                    )
+            job =
+                GlobalScope.launch {
+                    try {
+                        val actualLocation = locationService.getUserLocation(binding.root.context)
+                        val storePosition =
+                            android.location.Location("provider").apply {
+                                latitude = (store.location?.get(0) ?: 0.0)
+                                longitude = (store.location?.get(1) ?: 0.0)
+                            }
 
-                val distanceText = distance
-                binding.tvDistance.text = String.format("%.2fm.", distanceText)
-            } catch (e: Exception) {
-                binding.tvDistance.text = "UNKNOWN m."
-            }
+                        val distanceInMeters = actualLocation?.distanceTo(storePosition)
+
+                        // Update UI on the main thread
+                        Handler(Looper.getMainLooper()).post {
+                            binding.tvDistance.text = String.format("%.2fm.", distanceInMeters)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("TAG", "bind: ${e.message}")
+                    }
+                }
         }
     }
 }

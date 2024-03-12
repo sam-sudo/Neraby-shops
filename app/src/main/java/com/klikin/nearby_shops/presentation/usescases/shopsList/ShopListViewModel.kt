@@ -2,6 +2,7 @@ package com.klikin.nearby_shops.presentation.usescases.shopsList
 
 import android.content.Context
 import android.location.Location
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.klikin.nearby_shops.data.local.storeList
 import com.klikin.nearby_shops.domain.model.Store
@@ -33,7 +34,7 @@ class ShopListViewModel : ViewModel() {
     fun loadShops(context: Context) {
         GlobalScope.launch {
             val storeListOrderedByCloseness =
-                sortByDistanceToUser(storeList, getLocation(context))
+                sortByDistanceToUser(storeList, locationService.getUserLocation(context))
             _state.update {
                 it.copy(shopList = storeListOrderedByCloseness)
             }
@@ -51,7 +52,7 @@ class ShopListViewModel : ViewModel() {
                 val storeListByCategory = storeList.filter { it.category == categorySelected }
 
                 val storeListOrderedByCloseness =
-                    sortByDistanceToUser(storeListByCategory, getLocation(context))
+                    sortByDistanceToUser(storeListByCategory, locationService.getUserLocation(context))
 
                 _state.update {
                     it.copy(shopList = storeListOrderedByCloseness)
@@ -80,23 +81,17 @@ class ShopListViewModel : ViewModel() {
     ): List<Store> {
         return storeList.sortedBy { store ->
             val location = store.location
+            var destinationLocation = Location("provider")
+
             if (!location.isNullOrEmpty() && userLocation != null) {
-                val results = FloatArray(1)
-                Location.distanceBetween(
-                    location[0],
-                    location[1],
-                    userLocation.latitude,
-                    userLocation.longitude,
-                    results,
-                )
-                results[0]
+                destinationLocation.latitude = location[0]
+                destinationLocation.longitude = location[1]
+                Log.d("TAG", "sortByDistanceToUser: ${userLocation.distanceTo(destinationLocation)}")
+
+                userLocation.distanceTo(destinationLocation)
             } else {
                 Float.MAX_VALUE
             }
         }
-    }
-
-    suspend fun getLocation(context: Context): Location? {
-        return locationService.getUserLocation(context)
     }
 }
