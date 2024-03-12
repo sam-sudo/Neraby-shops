@@ -1,16 +1,22 @@
 package com.klikin.nearby_shops.presentation.usescases.shopsList
 
+import android.content.Context
 import android.location.Location
 import androidx.lifecycle.ViewModel
 import com.klikin.nearby_shops.data.local.storeList
 import com.klikin.nearby_shops.domain.model.Store
+import com.klikin.nearby_shops.framework.LocationService
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class ShopListViewModel : ViewModel() {
     private val _state = MutableStateFlow(ShopListViewState())
     val sate = _state.asStateFlow()
+
+    private val locationService = LocationService()
 
     val rainbowColorsArgb =
         listOf(
@@ -24,24 +30,32 @@ class ShopListViewModel : ViewModel() {
             0xFFCB4335.toInt(),
         )
 
-    fun loadShops() {
-        val storeListOrderedByCloseness =
-            sortByDistanceToUser(storeList, getLocation())
-        _state.update {
-            it.copy(shopList = storeListOrderedByCloseness)
+    fun loadShops(context: Context) {
+        GlobalScope.launch {
+            val storeListOrderedByCloseness =
+                sortByDistanceToUser(storeList, getLocation(context))
+            _state.update {
+                it.copy(shopList = storeListOrderedByCloseness)
+            }
+            loadCategories()
         }
     }
 
-    fun loadShopsByCategory(categorySelected: String) {
-        val categories = _state.value.categoriesMap.keys
-        if (categories.contains(categorySelected)) {
-            val storeListByCategory = storeList.filter { it.category == categorySelected }
+    fun loadShopsByCategory(
+        context: Context,
+        categorySelected: String,
+    ) {
+        GlobalScope.launch {
+            val categories = _state.value.categoriesMap.keys
+            if (categories.contains(categorySelected)) {
+                val storeListByCategory = storeList.filter { it.category == categorySelected }
 
-            val storeListOrderedByCloseness =
-                sortByDistanceToUser(storeListByCategory, getLocation())
+                val storeListOrderedByCloseness =
+                    sortByDistanceToUser(storeListByCategory, getLocation(context))
 
-            _state.update {
-                it.copy(shopList = storeListOrderedByCloseness)
+                _state.update {
+                    it.copy(shopList = storeListOrderedByCloseness)
+                }
             }
         }
     }
@@ -62,17 +76,17 @@ class ShopListViewModel : ViewModel() {
 
     fun sortByDistanceToUser(
         storeList: List<Store>,
-        userLocation: List<Double>,
+        userLocation: Location?,
     ): List<Store> {
         return storeList.sortedBy { store ->
             val location = store.location
-            if (location != null && location.isNotEmpty()) {
+            if (!location.isNullOrEmpty() && userLocation != null) {
                 val results = FloatArray(1)
                 Location.distanceBetween(
                     location[0],
                     location[1],
-                    userLocation[0],
-                    userLocation[1],
+                    userLocation.latitude,
+                    userLocation.longitude,
                     results,
                 )
                 results[0]
@@ -82,7 +96,7 @@ class ShopListViewModel : ViewModel() {
         }
     }
 
-    fun getLocation(): List<Double> {
-        return listOf(37.168476142495834, -3.6040761719512906)
+    suspend fun getLocation(context: Context): Location? {
+        return locationService.getUserLocation(context)
     }
 }

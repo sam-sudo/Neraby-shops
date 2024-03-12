@@ -37,6 +37,7 @@ class ShopListActivity : AppCompatActivity() {
 
         val categoriesRecyclerView = binding.recyclerViewCategories
         var adapter = CategoryAdapter(mutableMapOf())
+        val shopAdapter = ShopAdapter(ShopListViewState())
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -51,25 +52,21 @@ class ShopListActivity : AppCompatActivity() {
         } else {
             llShopListScreen.visibility = View.VISIBLE
             llSnoPermissionsScreen.visibility = View.GONE
-            viewModel.loadShops()
-            viewModel.loadCategories()
+
+            viewModel.loadShops(this)
+
             adapter.setOnItemClickListener(
                 object : CategoryAdapter.onItemClickListener {
                     override fun onItemClick(position: Int) {
                         val selectedCategory = viewModel.sate.value.categoriesMap.keys.toList()[position]
                         Log.d("TAG", "ITEM TOUCHED -> $selectedCategory")
-                        viewModel.loadShopsByCategory(selectedCategory)
+                        viewModel.loadShopsByCategory(this@ShopListActivity, selectedCategory)
                     }
                 },
             )
-            adapter.updateData(viewModel.sate.value.categoriesMap)
+
             categoriesRecyclerView.adapter = adapter
-            lifecycleScope.launch {
-                viewModel.sate.collect { state ->
-                    card1Title.text = state.shopList.size.toString()
-                    binding.recyclerViewShops.adapter = ShopAdapter(state)
-                }
-            }
+            binding.recyclerViewShops.adapter = shopAdapter
 
             // Cards
             card1.setOnClickListener {
@@ -89,6 +86,14 @@ class ShopListActivity : AppCompatActivity() {
                 card2.background.setTint(ContextCompat.getColor(this, R.color.colorCardOnTap))
                 card2Title.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
                 card2Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
+            }
+
+            lifecycleScope.launch {
+                viewModel.sate.collect { state ->
+                    card1Title.text = state.shopList.size.toString()
+                    shopAdapter.updateData(state)
+                    adapter.updateData(state.categoriesMap)
+                }
             }
         }
     }

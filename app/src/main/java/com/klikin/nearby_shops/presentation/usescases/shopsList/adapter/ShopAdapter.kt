@@ -12,9 +12,12 @@ import com.klikin.nearby_shops.presentation.usescases.shopsList.ShopListViewStat
 import com.klikin.nearby_shops.presentation.utils.LocationHandler
 
 class ShopAdapter(
-    private val state: ShopListViewState,
+    private var state: ShopListViewState,
 ) : RecyclerView.Adapter<ShopAdapter.ShopViewHolder>() {
-    val stores = state.shopList
+    fun updateData(newState: ShopListViewState) {
+        state = newState
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -30,10 +33,10 @@ class ShopAdapter(
         holder: ShopViewHolder,
         position: Int,
     ) {
-        holder.bind(stores[position])
+        holder.bind(state.shopList[position])
     }
 
-    override fun getItemCount() = stores.size
+    override fun getItemCount() = state.shopList.size
 
     class ShopViewHolder(
         private val binding: ItemStoreBinding,
