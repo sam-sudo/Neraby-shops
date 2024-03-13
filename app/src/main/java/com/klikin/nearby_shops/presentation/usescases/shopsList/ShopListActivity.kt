@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.databinding.ShopListScreenBinding
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.CategoryAdapter
@@ -57,10 +58,20 @@ class ShopListActivity : AppCompatActivity() {
 
             adapter.setOnItemClickListener(
                 object : CategoryAdapter.onItemClickListener {
+                    var lastSelectedItemPosition = RecyclerView.NO_POSITION
+
                     override fun onItemClick(position: Int) {
+                        adapter.setSelectedItem(position)
                         val selectedCategory = viewModel.sate.value.categoriesMap.keys.toList()[position]
                         Log.d("TAG", "ITEM TOUCHED -> $selectedCategory")
-                        viewModel.loadShopsByCategory(this@ShopListActivity, selectedCategory)
+
+                        if (position != lastSelectedItemPosition) {
+                            viewModel.loadShopsByCategory(this@ShopListActivity, selectedCategory)
+                        } else {
+                            viewModel.loadShops(this@ShopListActivity)
+                        }
+
+                        lastSelectedItemPosition = position
                     }
                 },
             )

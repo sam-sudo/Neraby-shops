@@ -9,4 +9,5 @@
     <color name="colorCardNoTap">#FFFFFFFF</color>
     <color name="colorCardTitleNoTap">#F36113</color>
     <color name="colorCardTextNoTap">#4E4D4C</color>
+    <color name="backgroundOnTapCategory">#C6C6C6</color>
 </resources>
