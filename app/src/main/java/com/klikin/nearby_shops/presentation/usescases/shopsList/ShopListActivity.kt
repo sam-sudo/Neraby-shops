@@ -14,6 +14,7 @@ import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.databinding.ShopListScreenBinding
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.CategoryAdapter
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.ShopAdapter
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class ShopListActivity : AppCompatActivity() {
@@ -21,6 +22,7 @@ class ShopListActivity : AppCompatActivity() {
     private val viewModel: ShopListViewModel = ShopListViewModel()
     private var card1Selected = true
     private var card2Selected = false
+    var lastSelectedItemPosition = RecyclerView.NO_POSITION
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,8 +64,6 @@ class ShopListActivity : AppCompatActivity() {
 
             categoryAdapter.setOnItemClickListener(
                 object : CategoryAdapter.onItemClickListener {
-                    var lastSelectedItemPosition = RecyclerView.NO_POSITION
-
                     override fun onItemClick(position: Int) {
                         categoryAdapter.setSelectedItem(position)
                         val selectedCategory =
@@ -91,7 +91,9 @@ class ShopListActivity : AppCompatActivity() {
                                 )
                                 lastSelectedItemPosition = position
                             } else {
-                                viewModel.loadLessThanOneKilometresShops(this@ShopListActivity)
+                                GlobalScope.launch {
+                                    viewModel.loadLessThanOneKilometresShops(this@ShopListActivity)
+                                }
                                 lastSelectedItemPosition = -1
                             }
                         }
@@ -105,7 +107,7 @@ class ShopListActivity : AppCompatActivity() {
             // Cards
             card1.setOnClickListener {
                 categoryAdapter.clearSelection()
-
+                lastSelectedItemPosition = -1
                 card1Selected = true
                 card2Selected = false
                 card1.background.setTint(ContextCompat.getColor(this, R.color.colorCardOnTap))
@@ -121,6 +123,7 @@ class ShopListActivity : AppCompatActivity() {
             }
             card2.setOnClickListener {
                 categoryAdapter.clearSelection()
+                lastSelectedItemPosition = -1
 
                 card1Selected = false
                 card2Selected = true
@@ -133,7 +136,9 @@ class ShopListActivity : AppCompatActivity() {
                 card2Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
 
                 // order items
-                viewModel.loadLessThanOneKilometresShops(this)
+                GlobalScope.launch {
+                    viewModel.loadLessThanOneKilometresShops(this@ShopListActivity)
+                }
             }
 
             lifecycleScope.launch {
