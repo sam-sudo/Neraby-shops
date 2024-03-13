@@ -18,7 +18,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="@string/listado_de_comercios"
+            android:text="@string/shopsList_text"
             android:gravity="center"
             android:textColor="@android:color/black"
             android:textSize="18sp" />
@@ -64,7 +64,7 @@
                         android:id="@+id/tv_shopText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/comercios"
+                        android:text="@string/shops_text"
                         android:textColor="@color/colorCardTextOnTap"/>
 
                 </LinearLayout>
@@ -101,7 +101,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="@color/colorCardTextNoTap"
-                        android:text="@string/a_menos_de_1_km"/>
+                        android:text="@string/lees_than_1_km"/>
 
                 </LinearLayout>
 

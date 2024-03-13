@@ -71,17 +71,36 @@ class ShopAdapter(
                 GlobalScope.launch {
                     try {
                         val actualLocation = locationService.getUserLocation(binding.root.context)
-                        val storePosition =
-                            android.location.Location("provider").apply {
-                                latitude = (store.location?.get(0) ?: 0.0)
-                                longitude = (store.location?.get(1) ?: 0.0)
+                        if (!store.location.isNullOrEmpty()) {
+                            val storePosition =
+                                android.location.Location("provider").apply {
+                                    latitude = (store.location?.get(0) ?: 0.0)
+                                    longitude = (store.location?.get(1) ?: 0.0)
+                                }
+
+                            val distanceInMeters = actualLocation?.distanceTo(storePosition)
+
+                            if (distanceInMeters != null) {
+                                if (distanceInMeters > 10000.0F) {
+                                    Handler(Looper.getMainLooper()).post {
+                                        Handler(Looper.getMainLooper()).post {
+                                            binding.tvDistance.setText(R.string.more_than_10_km)
+                                        }
+                                    }
+                                }
+                                Handler(Looper.getMainLooper()).post {
+                                    binding.tvDistance.text =
+                                        String.format("%.2fm.", distanceInMeters)
+                                }
+                            } else {
+                                Handler(Looper.getMainLooper()).post {
+                                    binding.tvDistance.setText(R.string.unknown_distance)
+                                }
                             }
-
-                        val distanceInMeters = actualLocation?.distanceTo(storePosition)
-
-                        // Update UI on the main thread
-                        Handler(Looper.getMainLooper()).post {
-                            binding.tvDistance.text = String.format("%.2fm.", distanceInMeters)
+                        } else {
+                            Handler(Looper.getMainLooper()).post {
+                                binding.tvDistance.setText(R.string.unknown_distance)
+                            }
                         }
                     } catch (e: Exception) {
                         Log.e("TAG", "bind: ${e.message}")

@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Nearby-shops</string>
-    <string name="listado_de_comercios">Listado de comercios</string>
-    <string name="comercios">Comercios</string>
-    <string name="a_menos_de_1_km">A menos de 1 Km</string>
+    <string name="shopsList_text">Listado de comercios</string>
+    <string name="shops_text">Comercios</string>
+    <string name="lees_than_1_km">A menos de 1 Km</string>
+    <string name="more_than_10_km">> 10Km.</string>
+    <string name="unknown_distance">Distancia desconocida</string>
     <string name="permisionAskText">Necesitas aceptar los permisos para poder usar la app.</string>
 </resources>

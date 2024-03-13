@@ -172,7 +172,7 @@ val storeList =
                     country = "País 9",
                 ),
             category = "Categoría 9",
-            location = null,
+            location = listOf(37.325746237823374, -3.092366879386448),
             openingHours = "Horario de la tienda 9 aquí",
         ),
     )
