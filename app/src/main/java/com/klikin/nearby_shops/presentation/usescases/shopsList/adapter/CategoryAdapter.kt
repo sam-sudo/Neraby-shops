@@ -25,6 +25,11 @@ class CategoryAdapter(private val categories: MutableMap<String, Int>) : Recycle
         notifyDataSetChanged()
     }
 
+    fun clearSelection() {
+        selectedItemIndex = RecyclerView.NO_POSITION
+        notifyDataSetChanged()
+    }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,

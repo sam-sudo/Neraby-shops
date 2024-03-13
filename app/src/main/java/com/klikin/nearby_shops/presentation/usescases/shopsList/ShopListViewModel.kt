@@ -16,6 +16,8 @@ import kotlinx.coroutines.launch
 class ShopListViewModel : ViewModel() {
     private val _state = MutableStateFlow(ShopListViewState())
     val sate = _state.asStateFlow()
+    val storesList = ArrayList<Store>()
+    val storesListLessThan1km = ArrayList<Store>()
 
     private val locationService = LocationService()
 
@@ -35,10 +37,47 @@ class ShopListViewModel : ViewModel() {
         GlobalScope.launch {
             val storeListOrderedByCloseness =
                 sortByDistanceToUser(storeList, locationService.getUserLocation(context))
+            storesList.clear()
+            storesList.addAll(storeListOrderedByCloseness)
             _state.update {
-                it.copy(shopList = storeListOrderedByCloseness)
+                it.copy(shopList = storesList)
             }
             loadCategories()
+        }
+    }
+
+    fun loadLessThanOneKilometresShops(context: Context) {
+        GlobalScope.launch {
+            val storeListFilter =
+                storesList.filter { store ->
+                    val location = store.location
+                    var destinationLocation = Location("provider")
+                    val userLocation = locationService.getUserLocation(context)
+
+                    if (!location.isNullOrEmpty() && userLocation != null) {
+                        destinationLocation.latitude = location[0]
+                        destinationLocation.longitude = location[1]
+                        Log.d("TAG", "sortByDistanceToUser: ${userLocation.distanceTo(destinationLocation)}")
+
+                        userLocation.distanceTo(destinationLocation) <= 2087.0 && store.location.isNotEmpty()
+                    } else {
+                        false
+                    }
+                }
+
+            storesListLessThan1km.clear()
+            storesListLessThan1km.addAll(storeListFilter)
+            _state.update {
+                it.copy(
+                    shopList = storesListLessThan1km,
+                )
+            }
+        }
+    }
+
+    fun loadAllShops() {
+        _state.update {
+            it.copy(shopList = storesList)
         }
     }
 
@@ -50,6 +89,24 @@ class ShopListViewModel : ViewModel() {
             val categories = _state.value.categoriesMap.keys
             if (categories.contains(categorySelected)) {
                 val storeListByCategory = storeList.filter { it.category == categorySelected }
+
+                val storeListOrderedByCloseness =
+                    sortByDistanceToUser(storeListByCategory, locationService.getUserLocation(context))
+                _state.update {
+                    it.copy(shopList = storeListOrderedByCloseness)
+                }
+            }
+        }
+    }
+
+    fun loadShopsByCategoryAndLessThan1km(
+        context: Context,
+        categorySelected: String,
+    ) {
+        GlobalScope.launch {
+            val categories = _state.value.categoriesMap.keys
+            if (categories.contains(categorySelected)) {
+                val storeListByCategory = storesListLessThan1km.filter { it.category == categorySelected }
 
                 val storeListOrderedByCloseness =
                     sortByDistanceToUser(storeListByCategory, locationService.getUserLocation(context))

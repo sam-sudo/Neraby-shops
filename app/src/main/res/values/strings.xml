@@ -6,4 +6,5 @@
     <string name="more_than_10_km">> 10Km.</string>
     <string name="unknown_distance">Distancia desconocida</string>
     <string name="permisionAskText">Necesitas aceptar los permisos para poder usar la app.</string>
+    <string name="no_near_shops">No hay comercios cercanos</string>
 </resources>

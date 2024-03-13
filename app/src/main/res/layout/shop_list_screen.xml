@@ -130,6 +130,19 @@
             android:orientation="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
+        <TextView
+            android:id="@+id/tv_emptyList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:visibility="gone"
+            android:text="@string/no_near_shops"
+            >
+
+        </TextView>
+
     </LinearLayout>
 
     <LinearLayout

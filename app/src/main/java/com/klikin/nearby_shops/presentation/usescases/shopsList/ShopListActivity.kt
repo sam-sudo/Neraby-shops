@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 class ShopListActivity : AppCompatActivity() {
     private lateinit var binding: ShopListScreenBinding
     private val viewModel: ShopListViewModel = ShopListViewModel()
+    private var card1Selected = true
+    private var card2Selected = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,10 +37,12 @@ class ShopListActivity : AppCompatActivity() {
         val card2 = binding.cardNearShops
         val card2Title = binding.tvShopLengthNear
         val card2Text = binding.tvShopNearText
+        val textViewNoShopS = binding.tvEmptyList
 
+        val shopsRecyclerView = binding.recyclerViewShops
         val categoriesRecyclerView = binding.recyclerViewCategories
-        var adapter = CategoryAdapter(mutableMapOf())
-        val shopAdapter = ShopAdapter(ShopListViewState())
+        val categoryAdapter = CategoryAdapter(mutableMapOf())
+        val shopAdapter = ShopAdapter(listOf(), mapOf())
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -56,31 +60,54 @@ class ShopListActivity : AppCompatActivity() {
 
             viewModel.loadShops(this)
 
-            adapter.setOnItemClickListener(
+            categoryAdapter.setOnItemClickListener(
                 object : CategoryAdapter.onItemClickListener {
                     var lastSelectedItemPosition = RecyclerView.NO_POSITION
 
                     override fun onItemClick(position: Int) {
-                        adapter.setSelectedItem(position)
-                        val selectedCategory = viewModel.sate.value.categoriesMap.keys.toList()[position]
+                        categoryAdapter.setSelectedItem(position)
+                        val selectedCategory =
+                            viewModel.sate.value.categoriesMap.keys.toList()[position]
                         Log.d("TAG", "ITEM TOUCHED -> $selectedCategory")
+                        Log.d("TAG", "lastSelectedItemPosition -> $lastSelectedItemPosition")
+                        Log.d("TAG", "lastSelectedItemPosition -> $position")
 
-                        if (position != lastSelectedItemPosition) {
-                            viewModel.loadShopsByCategory(this@ShopListActivity, selectedCategory)
+                        if (card1Selected) {
+                            if (position != lastSelectedItemPosition) {
+                                viewModel.loadShopsByCategory(
+                                    this@ShopListActivity,
+                                    selectedCategory,
+                                )
+                                lastSelectedItemPosition = position
+                            } else {
+                                viewModel.loadShops(this@ShopListActivity)
+                                lastSelectedItemPosition = -1
+                            }
                         } else {
-                            viewModel.loadShops(this@ShopListActivity)
+                            if (position != lastSelectedItemPosition) {
+                                viewModel.loadShopsByCategoryAndLessThan1km(
+                                    this@ShopListActivity,
+                                    selectedCategory,
+                                )
+                                lastSelectedItemPosition = position
+                            } else {
+                                viewModel.loadLessThanOneKilometresShops(this@ShopListActivity)
+                                lastSelectedItemPosition = -1
+                            }
                         }
-
-                        lastSelectedItemPosition = position
                     }
                 },
             )
 
-            categoriesRecyclerView.adapter = adapter
-            binding.recyclerViewShops.adapter = shopAdapter
+            categoriesRecyclerView.adapter = categoryAdapter
+            shopsRecyclerView.adapter = shopAdapter
 
             // Cards
             card1.setOnClickListener {
+                categoryAdapter.clearSelection()
+
+                card1Selected = true
+                card2Selected = false
                 card1.background.setTint(ContextCompat.getColor(this, R.color.colorCardOnTap))
                 card1Title.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
                 card1Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
@@ -88,8 +115,15 @@ class ShopListActivity : AppCompatActivity() {
                 card2.background.setTint(ContextCompat.getColor(this, R.color.colorCardNoTap))
                 card2Title.setTextColor(ContextCompat.getColor(this, R.color.colorCardTitleNoTap))
                 card2Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextNoTap))
+
+                // order items
+                viewModel.loadAllShops()
             }
             card2.setOnClickListener {
+                categoryAdapter.clearSelection()
+
+                card1Selected = false
+                card2Selected = true
                 card1.background.setTint(ContextCompat.getColor(this, R.color.colorCardNoTap))
                 card1Title.setTextColor(ContextCompat.getColor(this, R.color.colorCardTitleNoTap))
                 card1Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextNoTap))
@@ -97,13 +131,25 @@ class ShopListActivity : AppCompatActivity() {
                 card2.background.setTint(ContextCompat.getColor(this, R.color.colorCardOnTap))
                 card2Title.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
                 card2Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
+
+                // order items
+                viewModel.loadLessThanOneKilometresShops(this)
             }
 
             lifecycleScope.launch {
                 viewModel.sate.collect { state ->
-                    card1Title.text = state.shopList.size.toString()
-                    shopAdapter.updateData(state)
-                    adapter.updateData(state.categoriesMap)
+                    Log.d("tag", "card1Selected ->> $card1Selected")
+                    card1Title.text = viewModel.storesList.size.toString()
+                    card2Title.text = viewModel.storesListLessThan1km.size.toString()
+                    if (state.shopList.isNullOrEmpty()) {
+                        textViewNoShopS.visibility = View.VISIBLE
+                        shopsRecyclerView.visibility = View.GONE
+                    } else {
+                        textViewNoShopS.visibility = View.GONE
+                        shopsRecyclerView.visibility = View.VISIBLE
+                        shopAdapter.updateData(state.shopList, state.categoriesMap)
+                        categoryAdapter.updateData(state.categoriesMap)
+                    }
                 }
             }
         }

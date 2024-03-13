@@ -12,16 +12,20 @@ import com.klikin.nearby_shops.data.mapper.openHoursLittleFormat
 import com.klikin.nearby_shops.databinding.ItemStoreBinding
 import com.klikin.nearby_shops.domain.model.Store
 import com.klikin.nearby_shops.framework.LocationService
-import com.klikin.nearby_shops.presentation.usescases.shopsList.ShopListViewState
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class ShopAdapter(
-    private var state: ShopListViewState,
+    private var storeList: List<Store>,
+    private var categoriesMap: Map<String, Int>,
 ) : RecyclerView.Adapter<ShopAdapter.ShopViewHolder>() {
-    fun updateData(newState: ShopListViewState) {
-        state = newState
+    fun updateData(
+        newStoreList: List<Store>,
+        newCategoriesMap: Map<String, Int>,
+    ) {
+        storeList = newStoreList
+        categoriesMap = newCategoriesMap
         notifyDataSetChanged()
     }
 
@@ -32,21 +36,22 @@ class ShopAdapter(
         val binding =
             ItemStoreBinding
                 .inflate(LayoutInflater.from(parent.context), parent, false)
-        return ShopViewHolder(binding, state)
+        return ShopViewHolder(binding, storeList, categoriesMap)
     }
 
     override fun onBindViewHolder(
         holder: ShopViewHolder,
         position: Int,
     ) {
-        holder.bind(state.shopList[position])
+        holder.bind(storeList[position])
     }
 
-    override fun getItemCount() = state.shopList.size
+    override fun getItemCount() = storeList.size
 
     class ShopViewHolder(
         private val binding: ItemStoreBinding,
-        private val state: ShopListViewState,
+        private var storeList: List<Store>,
+        private var categoriesMap: Map<String, Int>,
     ) : RecyclerView.ViewHolder(
             binding.root,
         ) {
@@ -55,7 +60,7 @@ class ShopAdapter(
 
         fun bind(store: Store) {
             val colorBlanco = 0xFFFFFFFF.toInt()
-            val backGroundColor: Int = state.categoriesMap[store.category] ?: colorBlanco
+            val backGroundColor: Int = categoriesMap[store.category] ?: colorBlanco
 
             binding.tvStoreName.text = store.name
             binding.tvStoreOpenTime.text =
