@@ -14,6 +14,7 @@ import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.databinding.ShopListScreenBinding
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.CategoryAdapter
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.ShopAdapter
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class ShopListActivity : AppCompatActivity() {
@@ -91,7 +92,9 @@ class ShopListActivity : AppCompatActivity() {
                                 )
                                 lastSelectedItemPosition = position
                             } else {
-                                viewModel.loadLessThanOneKilometresShops(this@ShopListActivity)
+                                GlobalScope.launch {
+                                    viewModel.loadLessThanOneKilometresShops(this@ShopListActivity)
+                                }
                                 lastSelectedItemPosition = -1
                             }
                         }
@@ -133,7 +136,9 @@ class ShopListActivity : AppCompatActivity() {
                 card2Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
 
                 // order items
-                viewModel.loadLessThanOneKilometresShops(this)
+                GlobalScope.launch {
+                    viewModel.loadLessThanOneKilometresShops(this@ShopListActivity)
+                }
             }
 
             lifecycleScope.launch {

@@ -7,11 +7,13 @@ import androidx.lifecycle.ViewModel
 import com.klikin.nearby_shops.data.local.storeList
 import com.klikin.nearby_shops.domain.model.Store
 import com.klikin.nearby_shops.framework.LocationService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ShopListViewModel : ViewModel() {
     private val _state = MutableStateFlow(ShopListViewState())
@@ -35,20 +37,24 @@ class ShopListViewModel : ViewModel() {
 
     fun loadShops(context: Context) {
         GlobalScope.launch {
-            val storeListOrderedByCloseness =
-                sortByDistanceToUser(storeList, locationService.getUserLocation(context))
-            storesList.clear()
-            storesList.addAll(storeListOrderedByCloseness)
-            _state.update {
-                it.copy(shopList = storesList)
+            try {
+                val storeListOrderedByCloseness =
+                    sortByDistanceToUser(storeList, locationService.getUserLocation(context))
+                storesList.clear()
+                storesList.addAll(storeListOrderedByCloseness)
+                loadLessThanOneKilometresShops(context)
+            } finally {
+                _state.update {
+                    it.copy(shopList = storesList)
+                }
+                loadCategories()
             }
-            loadCategories()
         }
     }
 
-    fun loadLessThanOneKilometresShops(context: Context) {
-        GlobalScope.launch {
-            val storeListFilter =
+    suspend fun loadLessThanOneKilometresShops(context: Context) {
+        val storeListFilter =
+            withContext(Dispatchers.Default) {
                 storesList.filter { store ->
                     val location = store.location
                     var destinationLocation = Location("provider")
@@ -64,14 +70,15 @@ class ShopListViewModel : ViewModel() {
                         false
                     }
                 }
-
-            storesListLessThan1km.clear()
-            storesListLessThan1km.addAll(storeListFilter)
-            _state.update {
-                it.copy(
-                    shopList = storesListLessThan1km,
-                )
             }
+
+        storesListLessThan1km.clear()
+        storesListLessThan1km.addAll(storeListFilter)
+
+        _state.update {
+            it.copy(
+                shopList = storesListLessThan1km,
+            )
         }
     }
 
