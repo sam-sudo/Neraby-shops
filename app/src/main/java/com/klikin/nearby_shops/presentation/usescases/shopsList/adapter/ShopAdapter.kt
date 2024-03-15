@@ -36,7 +36,7 @@ class ShopAdapter(
         val binding =
             ItemStoreBinding
                 .inflate(LayoutInflater.from(parent.context), parent, false)
-        return ShopViewHolder(binding, storeList, categoriesMap)
+        return ShopViewHolder(binding, categoriesMap)
     }
 
     override fun onBindViewHolder(
@@ -50,7 +50,6 @@ class ShopAdapter(
 
     class ShopViewHolder(
         private val binding: ItemStoreBinding,
-        private var storeList: List<Store>,
         private var categoriesMap: Map<String, Int>,
     ) : RecyclerView.ViewHolder(
             binding.root,
@@ -60,7 +59,7 @@ class ShopAdapter(
 
         fun bind(store: Store) {
             val colorBlanco = 0xFFFFFFFF.toInt()
-            val backGroundColor: Int = categoriesMap[store.category] ?: colorBlanco
+            val backGroundColor: Int = categoriesMap[store.category.toString()] ?: colorBlanco
 
             binding.tvStoreName.text = store.name
             binding.tvStoreOpenTime.text =

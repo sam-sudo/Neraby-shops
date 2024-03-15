@@ -8,18 +8,21 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.databinding.ShopListScreenBinding
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.CategoryAdapter
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.ShopAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class ShopListActivity : AppCompatActivity() {
     private lateinit var binding: ShopListScreenBinding
-    private val viewModel: ShopListViewModel = ShopListViewModel()
+    private lateinit var viewModel: ShopListViewModel
     private var card1Selected = true
     private var card2Selected = false
     var lastSelectedItemPosition = RecyclerView.NO_POSITION
@@ -30,6 +33,8 @@ class ShopListActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
+
+        viewModel = ViewModelProvider(this).get(ShopListViewModel::class.java)
 
         val llShopListScreen = binding.llShopListScreen
         val llSnoPermissionsScreen = binding.llNoPermissionsGranted
@@ -80,7 +85,7 @@ class ShopListActivity : AppCompatActivity() {
                                 )
                                 lastSelectedItemPosition = position
                             } else {
-                                viewModel.loadShops(this@ShopListActivity)
+                                viewModel.loadAllShops()
                                 lastSelectedItemPosition = -1
                             }
                         } else {
