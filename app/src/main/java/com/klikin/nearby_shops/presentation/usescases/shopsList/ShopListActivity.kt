@@ -148,17 +148,28 @@ class ShopListActivity : AppCompatActivity() {
 
             lifecycleScope.launch {
                 viewModel.sate.collect { state ->
-                    Log.d("tag", "card1Selected ->> $card1Selected")
-                    card1Title.text = viewModel.storesList.size.toString()
-                    card2Title.text = viewModel.storesListLessThan1km.size.toString()
-                    if (state.shopList.isNullOrEmpty()) {
-                        textViewNoShopS.visibility = View.VISIBLE
-                        shopsRecyclerView.visibility = View.GONE
+
+                    if (state.isLoading) {
+                        binding.shimmerView.visibility = View.VISIBLE
+                        binding.shimmerCategoryView.visibility = View.VISIBLE
+                        binding.shimmerView.startShimmer()
                     } else {
-                        textViewNoShopS.visibility = View.GONE
-                        shopsRecyclerView.visibility = View.VISIBLE
-                        shopAdapter.updateData(state.shopList, state.categoriesMap)
-                        categoryAdapter.updateData(state.categoriesMap)
+                        binding.shimmerView.visibility = View.GONE
+                        binding.shimmerCategoryView.visibility = View.GONE
+                        binding.shimmerView.stopShimmer()
+
+                        Log.d("tag", "card1Selected ->> $card1Selected")
+                        card1Title.text = viewModel.storesList.size.toString()
+                        card2Title.text = viewModel.storesListLessThan1km.size.toString()
+                        if (state.shopList.isNullOrEmpty()) {
+                            textViewNoShopS.visibility = View.VISIBLE
+                            binding.llShopList.visibility = View.GONE
+                        } else {
+                            textViewNoShopS.visibility = View.GONE
+                            binding.llShopList.visibility = View.VISIBLE
+                            shopAdapter.updateData(state.shopList, state.categoriesMap)
+                            categoryAdapter.updateData(state.categoriesMap)
+                        }
                     }
                 }
             }

@@ -113,22 +113,92 @@
             android:layout_width="match_parent"
             android:layout_height="8pt"/>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewCategories"
+        <LinearLayout
+            android:id="@+id/ll_categoryList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_category" />
+            android:orientation="vertical">
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmer_category_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:duration="800">
+
+                <!-- Adding 8 rows of placeholders -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <include layout="@layout/list_placeholder_category_layout" />
+                    <include layout="@layout/list_placeholder_category_layout" />
+                    <include layout="@layout/list_placeholder_category_layout" />
+                    <include layout="@layout/list_placeholder_category_layout" />
+                </LinearLayout>
+
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewCategories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_category" />
+
+        </LinearLayout>
 
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewShops"
+        <LinearLayout
+            android:id="@+id/ll_shopList"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="8pt"
-            android:orientation="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            android:orientation="vertical">
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmer_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:duration="800">
+
+                <!-- Adding 8 rows of placeholders -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <include layout="@layout/list_placeholder_layout" />
+                    <include layout="@layout/list_placeholder_layout" />
+                    <include layout="@layout/list_placeholder_layout" />
+                    <include layout="@layout/list_placeholder_layout" />
+                    <include layout="@layout/list_placeholder_layout" />
+                    <include layout="@layout/list_placeholder_layout" />
+                    <include layout="@layout/list_placeholder_layout" />
+                    <include layout="@layout/list_placeholder_layout" />
+                </LinearLayout>
+
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewShops"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8pt"
+                android:orientation="vertical"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tv_emptyList"

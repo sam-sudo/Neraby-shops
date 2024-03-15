@@ -47,6 +47,9 @@ class ShopListViewModel
 
         fun loadShops(context: Context) {
             GlobalScope.launch {
+                _state.update {
+                    it.copy(isLoading = true)
+                }
                 try {
                     storeListFromApi = storeRepository.getStores().body()?.toStoreList() ?: ArrayList()
                     storesList = getElementsInGroupsOf20(storeListFromApi, 0)
@@ -58,8 +61,12 @@ class ShopListViewModel
                     loadLessThanOneKilometresShops(context)
                 } finally {
                     _state.update {
-                        it.copy(shopList = storesList)
+                        it.copy(
+                            shopList = storesList,
+                            isLoading = false,
+                        )
                     }
+
                     loadCategories()
                 }
             }
@@ -112,7 +119,12 @@ class ShopListViewModel
                 val categories = _state.value.categoriesMap.keys
                 if (categories.contains(categorySelected)) {
                     // val storeListByCategory = storesList.filter { it.category == Categories.valueOf(categorySelected) }
-                    val storeListByCategory = ArrayList(storeListFromApi.filter { it.category == Categories.valueOf(categorySelected) })
+                    val storeListByCategory =
+                        ArrayList(
+                            storeListFromApi.filter {
+                                it.category == Categories.valueOf(categorySelected)
+                            },
+                        )
                     val storeListByCategoryToShow =
                         getElementsInGroupsOf20ByCategory(
                             storeListByCategory,
