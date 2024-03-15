@@ -105,6 +105,12 @@ class ShopListViewModel
             }
         }
 
+        fun loadsShopsLessThan1Kilometre()  {
+            _state.update {
+                it.copy(shopList = storesListLessThan1km)
+            }
+        }
+
         fun loadAllShops() {
             _state.update {
                 it.copy(shopList = storesList)

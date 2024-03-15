@@ -16,7 +16,6 @@ import com.klikin.nearby_shops.databinding.ShopListScreenBinding
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.CategoryAdapter
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.ShopAdapter
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -96,9 +95,7 @@ class ShopListActivity : AppCompatActivity() {
                                 )
                                 lastSelectedItemPosition = position
                             } else {
-                                GlobalScope.launch {
-                                    viewModel.loadLessThanOneKilometresShops(this@ShopListActivity)
-                                }
+                                viewModel.loadsShopsLessThan1Kilometre()
                                 lastSelectedItemPosition = -1
                             }
                         }
@@ -141,9 +138,7 @@ class ShopListActivity : AppCompatActivity() {
                 card2Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
 
                 // order items
-                GlobalScope.launch {
-                    viewModel.loadLessThanOneKilometresShops(this@ShopListActivity)
-                }
+                viewModel.loadsShopsLessThan1Kilometre()
             }
 
             lifecycleScope.launch {
@@ -152,11 +147,16 @@ class ShopListActivity : AppCompatActivity() {
                     if (state.isLoading) {
                         binding.shimmerView.visibility = View.VISIBLE
                         binding.shimmerCategoryView.visibility = View.VISIBLE
+                        binding.shimmerShopsCards.startShimmer()
                         binding.shimmerView.startShimmer()
+                        binding.shimmerCategoryView.startShimmer()
                     } else {
                         binding.shimmerView.visibility = View.GONE
                         binding.shimmerCategoryView.visibility = View.GONE
+                        binding.shimmerShopsCards.visibility = View.GONE
+                        binding.shimmerShopsCards.stopShimmer()
                         binding.shimmerView.stopShimmer()
+                        binding.shimmerCategoryView.stopShimmer()
 
                         Log.d("tag", "card1Selected ->> $card1Selected")
                         card1Title.text = viewModel.storesList.size.toString()
