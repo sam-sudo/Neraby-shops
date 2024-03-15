@@ -1,12 +1,16 @@
 package com.klikin.nearby_shops.presentation.usescases.shopsList.adapter
 
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.facebook.shimmer.Shimmer
+import com.facebook.shimmer.ShimmerDrawable
 import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.data.mapper.openHoursLittleFormat
 import com.klikin.nearby_shops.databinding.ItemStoreBinding
@@ -66,7 +70,26 @@ class ShopAdapter(
                 store?.openHoursLittleFormat()?.joinToString("\n") { it.trim() }
             binding.llCardHeader.setBackgroundColor(backGroundColor)
             if (!store.photo.isNullOrEmpty()) {
-                binding.imgvShopImg.setImageURI(Uri.parse(store.photo))
+                val shimmer =
+                    Shimmer.AlphaHighlightBuilder()
+                        .setDuration(1500) // Duración del efecto de shimmer en milisegundos
+                        .setBaseAlpha(0.7f) // Intensidad del efecto shimmer
+                        .setHighlightAlpha(0.6f) // Intensidad del resplandor
+                        .setDirection(Shimmer.Direction.LEFT_TO_RIGHT) // Dirección del efecto shimmer
+                        .build()
+
+                val shimmerDrawable =
+                    ShimmerDrawable().apply {
+                        setShimmer(shimmer)
+                    }
+
+                Glide.with(binding.root.context)
+                    .load(store.photo)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .transform(RoundedCorners(20))
+                    .placeholder(shimmerDrawable)
+                    .error(R.drawable.no_image)
+                    .into(binding.imgvShopImg)
             } else {
                 binding.imgvShopImg.setImageResource(R.drawable.no_image)
             }
