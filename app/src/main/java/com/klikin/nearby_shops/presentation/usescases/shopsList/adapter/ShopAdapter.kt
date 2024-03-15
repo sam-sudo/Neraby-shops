@@ -15,6 +15,7 @@ import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.data.mapper.openHoursLittleFormat
 import com.klikin.nearby_shops.databinding.ItemStoreBinding
 import com.klikin.nearby_shops.domain.model.Store
+import com.klikin.nearby_shops.domain.model.enums.Categories
 import com.klikin.nearby_shops.framework.LocationService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -69,6 +70,22 @@ class ShopAdapter(
             binding.tvStoreOpenTime.text =
                 store?.openHoursLittleFormat()?.joinToString("\n") { it.trim() }
             binding.llCardHeader.setBackgroundColor(backGroundColor)
+
+            val categoryIconMap =
+                mapOf(
+                    Categories.FOOD to R.drawable.food_ico,
+                    Categories.GAS_STATION to R.drawable.gas_station_ico,
+                    Categories.SHOPPING to R.drawable.shopping_ico, // Agrega los demás íconos aquí
+                    Categories.BEAUTY to R.drawable.beauty_ico,
+                    Categories.LEISURE to R.drawable.game_ico,
+                    Categories.ELECTRIC_STATION to R.drawable.electric_station_ico,
+                    Categories.DIRECT_SALES to R.drawable.gas_station_ico,
+                    Categories.UNKNOWN to R.drawable.unknow_ico,
+                )
+
+            val iconResource = categoryIconMap.getOrElse(store.category) { R.mipmap.fuel_ico }
+            binding.imvCategoryIcon.setBackgroundResource(iconResource)
+
             if (!store.photo.isNullOrEmpty()) {
                 val shimmer =
                     Shimmer.AlphaHighlightBuilder()

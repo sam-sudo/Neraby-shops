@@ -33,11 +33,11 @@
 
                 <ImageView
                     android:id="@+id/imv_categoryIcon"
-                    android:src="@mipmap/fuel_ico"
-
                     app:tint="@color/white"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_margin="4pt"
+                    android:paddingStart="10dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     />
 
             </LinearLayout>
@@ -84,9 +84,8 @@
                     android:id="@+id/imgv_shopImg"
                     android:src="@drawable/no_image"
                     android:layout_gravity="center"
-                    android:layout_margin="4pt"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"/>
 
             </LinearLayout>
 
@@ -94,6 +93,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_margin="4pt"
                 android:orientation="vertical">
 
                 <TextView
