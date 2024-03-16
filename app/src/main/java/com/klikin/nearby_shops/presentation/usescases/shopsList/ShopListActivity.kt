@@ -95,7 +95,7 @@ class ShopListActivity : AppCompatActivity() {
                                 )
                                 lastSelectedItemPosition = position
                             } else {
-                                viewModel.loadsShopsLessThan1Kilometre()
+                                viewModel.showLessThan1KilometresShops()
                                 lastSelectedItemPosition = -1
                             }
                         }
@@ -138,7 +138,7 @@ class ShopListActivity : AppCompatActivity() {
                 card2Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
 
                 // order items
-                viewModel.loadsShopsLessThan1Kilometre()
+                viewModel.showLessThan1KilometresShops()
             }
 
             lifecycleScope.launch {

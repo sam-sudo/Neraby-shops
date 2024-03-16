@@ -2,7 +2,6 @@ package com.klikin.nearby_shops.presentation.usescases.shopsList
 
 import android.content.Context
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.klikin.nearby_shops.domain.mapper.toStoreList
 import com.klikin.nearby_shops.domain.model.Store
@@ -58,7 +57,6 @@ class ShopListViewModel
                         sortByDistanceToUser(storesList, userLocation)
                     storesList.clear()
                     storesList.addAll(storeListOrderedByCloseness)
-                    loadLessThanOneKilometresShops(context)
                 } finally {
                     _state.update {
                         it.copy(
@@ -66,8 +64,8 @@ class ShopListViewModel
                             isLoading = false,
                         )
                     }
-
                     loadCategories()
+                    loadLessThanOneKilometresShops(context)
                 }
             }
         }
@@ -75,37 +73,52 @@ class ShopListViewModel
         suspend fun loadLessThanOneKilometresShops(context: Context) {
             val storeListFilter =
                 withContext(Dispatchers.Default) {
-                    storesList.filter { store ->
+                    storeListFromApi.forEach { store ->
                         val location = store.location
-                        var destinationLocation = Location("provider")
                         val userLocation = locationService.getUserLocation(context)
 
                         if (!location.isNullOrEmpty() && userLocation != null) {
-                            destinationLocation.latitude = location[0]
-                            destinationLocation.longitude = location[1]
-                            Log.d(
-                                "TAG",
-                                "sortByDistanceToUser: ${userLocation.distanceTo(destinationLocation)}",
-                            )
+                            val latitude = location[1]
+                            val longitude = location[0]
+                            val userLatitude = userLocation.latitude.toDouble()
+                            val userLongitude = userLocation.longitude.toDouble()
+                            val distanceInMeters =
+                                locationService.calculateDistanceInMeters(
+                                    userLatitude,
+                                    userLongitude,
+                                    latitude,
+                                    longitude,
+                                )
 
-                            userLocation.distanceTo(destinationLocation) <= 2087.0 && store.location.isNotEmpty()
-                        } else {
-                            false
+                            if (distanceInMeters <= 8000.0 && store.location.isNotEmpty()) {
+                                // Agregar el elemento a la lista filtrada
+                                storesListLessThan1km.add(store)
+
+                                // Actualizar el estado con el nuevo tamaño de la lista filtrada
+                                val newState =
+                                    _state.value.copy(
+                                        lessThan1KmShopList = storesListLessThan1km.size,
+                                    )
+
+                                _state.update {
+                                    newState
+                                }
+                            }
                         }
                     }
                 }
 
-            storesListLessThan1km.clear()
+            /*storesListLessThan1km.clear()
             storesListLessThan1km.addAll(storeListFilter)
 
             _state.update {
                 it.copy(
-                    shopList = storesListLessThan1km,
+                    lessThan1KmshopList = storesListLessThan1km,
                 )
-            }
+            }*/
         }
 
-        fun loadsShopsLessThan1Kilometre() {
+        fun showLessThan1KilometresShops() {
             _state.update {
                 it.copy(shopList = storesListLessThan1km)
             }
