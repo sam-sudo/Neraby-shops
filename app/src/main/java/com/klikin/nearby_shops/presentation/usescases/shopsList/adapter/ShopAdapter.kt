@@ -12,8 +12,9 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerDrawable
 import com.klikin.nearby_shops.R
-import com.klikin.nearby_shops.data.mapper.openHoursLittleFormat
 import com.klikin.nearby_shops.databinding.ItemStoreBinding
+import com.klikin.nearby_shops.domain.mapper.handlerMetresText
+import com.klikin.nearby_shops.domain.mapper.openHoursLittleFormat
 import com.klikin.nearby_shops.domain.model.Store
 import com.klikin.nearby_shops.domain.model.enums.Categories
 import com.klikin.nearby_shops.framework.LocationService
@@ -63,6 +64,7 @@ class ShopAdapter(
         private var job: Job? = null
 
         fun bind(store: Store) {
+            val MAX_DISTANCE = 50000.0
             val colorBlanco = 0xFFFFFFFF.toInt()
             val backGroundColor: Int = categoriesMap[store.category.toString()] ?: colorBlanco
 
@@ -116,25 +118,30 @@ class ShopAdapter(
                     try {
                         val actualLocation = locationService.getUserLocation(binding.root.context)
                         if (!store.location.isNullOrEmpty()) {
-                            val storePosition =
-                                android.location.Location("provider").apply {
-                                    latitude = (store.location?.get(0) ?: 0.0)
-                                    longitude = (store.location?.get(1) ?: 0.0)
-                                }
-
-                            val distanceInMeters = actualLocation?.distanceTo(storePosition)
+                            val location = store.location
+                            val latitude = location[1]
+                            val longitude = location[0]
+                            val userLatitude = actualLocation?.latitude?.toDouble() ?: 0.0
+                            val userLongitude = actualLocation?.longitude?.toDouble() ?: 0.0
+                            val distanceInMeters =
+                                locationService.calculateDistanceInMeters(
+                                    userLatitude,
+                                    userLongitude,
+                                    latitude,
+                                    longitude,
+                                )
 
                             if (distanceInMeters != null) {
-                                if (distanceInMeters > 10000.0F) {
+                                Log.d("TAG", "distanceInMeters in adapter: $distanceInMeters ")
+                                if (distanceInMeters > MAX_DISTANCE) {
                                     Handler(Looper.getMainLooper()).post {
                                         Handler(Looper.getMainLooper()).post {
-                                            binding.tvDistance.setText(R.string.more_than_10_km)
+                                            binding.tvDistance.setText(R.string.more_than_50_km)
                                         }
                                     }
                                 }
                                 Handler(Looper.getMainLooper()).post {
-                                    binding.tvDistance.text =
-                                        String.format("%.2fm.", distanceInMeters)
+                                    binding.tvDistance.text = distanceInMeters.handlerMetresText()
                                 }
                             } else {
                                 Handler(Looper.getMainLooper()).post {

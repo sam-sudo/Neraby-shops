@@ -53,9 +53,9 @@ class ShopListViewModel
                 try {
                     storeListFromApi = storeRepository.getStores().body()?.toStoreList() ?: ArrayList()
                     storesList = getElementsInGroupsOf20(storeListFromApi, 0)
-
+                    val userLocation = locationService.getUserLocation(context)
                     val storeListOrderedByCloseness =
-                        sortByDistanceToUser(storesList, locationService.getUserLocation(context))
+                        sortByDistanceToUser(storesList, userLocation)
                     storesList.clear()
                     storesList.addAll(storeListOrderedByCloseness)
                     loadLessThanOneKilometresShops(context)
@@ -105,7 +105,7 @@ class ShopListViewModel
             }
         }
 
-        fun loadsShopsLessThan1Kilometre()  {
+        fun loadsShopsLessThan1Kilometre() {
             _state.update {
                 it.copy(shopList = storesListLessThan1km)
             }
@@ -197,17 +197,16 @@ class ShopListViewModel
         ): List<Store> {
             return storeList.sortedBy { store ->
                 val location = store.location
-                var destinationLocation = Location("provider")
 
-                if (!location.isNullOrEmpty() && userLocation != null) {
-                    destinationLocation.latitude = location[0]
-                    destinationLocation.longitude = location[1]
-                    Log.d(
-                        "TAG",
-                        "sortByDistanceToUser: ${userLocation.distanceTo(destinationLocation)}",
-                    )
+                if (!location.isNullOrEmpty()) {
+                    val latitude = location[1]
+                    val longitude = location[0]
 
-                    userLocation.distanceTo(destinationLocation)
+                    val userLatitude = userLocation?.latitude?.toDouble() ?: 0.0
+                    val userLongitude = userLocation?.longitude?.toDouble() ?: 0.0
+                    val distanceInMeters = locationService.calculateDistanceInMeters(userLatitude, userLongitude, latitude, longitude)
+
+                    distanceInMeters
                 } else {
                     Float.MAX_VALUE
                 }
