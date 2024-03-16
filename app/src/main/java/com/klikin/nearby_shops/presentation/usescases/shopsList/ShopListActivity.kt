@@ -10,9 +10,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.databinding.ShopListScreenBinding
+import com.klikin.nearby_shops.domain.model.enums.Categories
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.CategoryAdapter
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.ShopAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,6 +27,7 @@ class ShopListActivity : AppCompatActivity() {
     private var card1Selected = true
     private var card2Selected = false
     var lastSelectedItemPosition = RecyclerView.NO_POSITION
+    var selectedCategory = Categories.UNKNOWN
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,9 +72,11 @@ class ShopListActivity : AppCompatActivity() {
             categoryAdapter.setOnItemClickListener(
                 object : CategoryAdapter.onItemClickListener {
                     override fun onItemClick(position: Int) {
+                        shopsRecyclerView.scrollToPosition(0)
+
                         categoryAdapter.setSelectedItem(position)
-                        val selectedCategory =
-                            viewModel.sate.value.categoriesMap.keys.toList()[position]
+                        selectedCategory =
+                            Categories.valueOf(viewModel.sate.value.categoriesMap.keys.toList()[position])
                         Log.d("TAG", "ITEM TOUCHED -> $selectedCategory")
                         Log.d("TAG", "lastSelectedItemPosition -> $lastSelectedItemPosition")
                         Log.d("TAG", "lastSelectedItemPosition -> $position")
@@ -84,7 +89,7 @@ class ShopListActivity : AppCompatActivity() {
                                 )
                                 lastSelectedItemPosition = position
                             } else {
-                                viewModel.loadAllShops()
+                                viewModel.showShops(this@ShopListActivity, 0)
                                 lastSelectedItemPosition = -1
                             }
                         } else {
@@ -94,8 +99,9 @@ class ShopListActivity : AppCompatActivity() {
                                     selectedCategory,
                                 )
                                 lastSelectedItemPosition = position
+                                lastSelectedItemPosition = position
                             } else {
-                                viewModel.showLessThan1KilometresShops()
+                                viewModel.showLessThan1KilometresShops(this@ShopListActivity)
                                 lastSelectedItemPosition = -1
                             }
                         }
@@ -105,6 +111,30 @@ class ShopListActivity : AppCompatActivity() {
 
             categoriesRecyclerView.adapter = categoryAdapter
             shopsRecyclerView.adapter = shopAdapter
+
+            shopsRecyclerView.addOnScrollListener(
+                object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(
+                        recyclerView: RecyclerView,
+                        dx: Int,
+                        dy: Int,
+                    ) {
+                        super.onScrolled(recyclerView, dx, dy)
+                        val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                        val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+                        val totalItemCount = shopAdapter.itemCount
+
+                        if (lastVisibleItemPosition == totalItemCount - 1 && totalItemCount >= 20) {
+                            Log.d("TAG", "onScrolled: nextPage")
+                            if (lastSelectedItemPosition == -1) {
+                                viewModel.showShopsNextPage(this@ShopListActivity)
+                            } else {
+                                viewModel.showShopsNextPageByCategory(this@ShopListActivity, selectedCategory)
+                            }
+                        }
+                    }
+                },
+            )
 
             // Cards
             card1.setOnClickListener {
@@ -121,7 +151,7 @@ class ShopListActivity : AppCompatActivity() {
                 card2Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextNoTap))
 
                 // order items
-                viewModel.loadAllShops()
+                viewModel.showShops(this@ShopListActivity, 0)
             }
             card2.setOnClickListener {
                 categoryAdapter.clearSelection()
@@ -138,12 +168,12 @@ class ShopListActivity : AppCompatActivity() {
                 card2Text.setTextColor(ContextCompat.getColor(this, R.color.colorCardTextOnTap))
 
                 // order items
-                viewModel.showLessThan1KilometresShops()
+                viewModel.showLessThan1KilometresShops(this)
             }
 
             lifecycleScope.launch {
                 viewModel.sate.collect { state ->
-
+                    Log.d("TAG", "onCreate: ${state.shopList.size}")
                     if (state.isLoading) {
                         binding.shimmerView.visibility = View.VISIBLE
                         binding.shimmerCategoryView.visibility = View.VISIBLE
@@ -159,7 +189,11 @@ class ShopListActivity : AppCompatActivity() {
                         binding.shimmerCategoryView.stopShimmer()
 
                         Log.d("tag", "card1Selected ->> $card1Selected")
-                        card1Title.text = viewModel.storesList.size.toString()
+                        card1Title.text = viewModel.storeListFromApi.size.toString()
+                        Log.d(
+                            "tag",
+                            "state.shopList ->> ${state.shopList.size}",
+                        )
                         card2Title.text = viewModel.storesListLessThan1km.size.toString()
                         if (state.shopList.isNullOrEmpty()) {
                             textViewNoShopS.visibility = View.VISIBLE

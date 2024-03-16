@@ -30,6 +30,7 @@ class ShopAdapter(
         newStoreList: List<Store>,
         newCategoriesMap: Map<String, Int>,
     ) {
+        storeList = emptyList()
         storeList = newStoreList
         categoriesMap = newCategoriesMap
         notifyDataSetChanged()

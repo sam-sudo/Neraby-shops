@@ -29,6 +29,7 @@ class ShopListViewModel
         var storeListFromApi = ArrayList<Store>()
         var storesList = ArrayList<Store>()
         val storesListLessThan1km = ArrayList<Store>()
+        var actualPage = 0
 
         private val locationService = LocationService()
 
@@ -52,11 +53,7 @@ class ShopListViewModel
                 try {
                     storeListFromApi = storeRepository.getStores().body()?.toStoreList() ?: ArrayList()
                     storesList = getElementsInGroupsOf20(storeListFromApi, 0)
-                    val userLocation = locationService.getUserLocation(context)
-                    val storeListOrderedByCloseness =
-                        sortByDistanceToUser(storesList, userLocation)
-                    storesList.clear()
-                    storesList.addAll(storeListOrderedByCloseness)
+                    orderSoreListByNear(context)
                 } finally {
                     _state.update {
                         it.copy(
@@ -70,84 +67,102 @@ class ShopListViewModel
             }
         }
 
-        suspend fun loadLessThanOneKilometresShops(context: Context) {
-            val storeListFilter =
-                withContext(Dispatchers.Default) {
-                    storeListFromApi.forEach { store ->
-                        val location = store.location
-                        val userLocation = locationService.getUserLocation(context)
-
-                        if (!location.isNullOrEmpty() && userLocation != null) {
-                            val latitude = location[1]
-                            val longitude = location[0]
-                            val userLatitude = userLocation.latitude.toDouble()
-                            val userLongitude = userLocation.longitude.toDouble()
-                            val distanceInMeters =
-                                locationService.calculateDistanceInMeters(
-                                    userLatitude,
-                                    userLongitude,
-                                    latitude,
-                                    longitude,
-                                )
-
-                            if (distanceInMeters <= 8000.0 && store.location.isNotEmpty()) {
-                                // Agregar el elemento a la lista filtrada
-                                storesListLessThan1km.add(store)
-
-                                // Actualizar el estado con el nuevo tamaño de la lista filtrada
-                                val newState =
-                                    _state.value.copy(
-                                        lessThan1KmShopList = storesListLessThan1km.size,
-                                    )
-
-                                _state.update {
-                                    newState
-                                }
-                            }
-                        }
-                    }
+        fun showShops(
+            context: Context,
+            pageIndex: Int,
+        ) {
+            GlobalScope.launch {
+                storesList = getElementsInGroupsOf20(storeListFromApi, pageIndex)
+                orderSoreListByNear(context)
+                _state.update {
+                    it.copy(shopList = storesList)
                 }
-
-            /*storesListLessThan1km.clear()
-            storesListLessThan1km.addAll(storeListFilter)
-
-            _state.update {
-                it.copy(
-                    lessThan1KmshopList = storesListLessThan1km,
-                )
-            }*/
-        }
-
-        fun showLessThan1KilometresShops() {
-            _state.update {
-                it.copy(shopList = storesListLessThan1km)
             }
         }
 
-        fun loadAllShops() {
-            _state.update {
-                it.copy(shopList = storesList)
+        fun showShopsNextPage(context: Context) {
+            GlobalScope.launch {
+                actualPage += 20
+                val newPageItems = getElementsInGroupsOf20(storeListFromApi, actualPage)
+                val updatedList = mutableListOf<Store>()
+                updatedList.addAll(_state.value.shopList)
+                updatedList.addAll(newPageItems)
+                storesList = ArrayList(updatedList)
+                orderSoreListByNear(context)
+                _state.update {
+                    it.copy(shopList = storesList)
+                }
+            }
+        }
+
+        fun showShopsNextPageByCategory(
+            context: Context,
+            category: Categories,
+        ) {
+            GlobalScope.launch {
+                actualPage += 20
+                val newPageItems = getElementsInGroupsOf20ByCategory(category, actualPage)
+                val updatedList = mutableListOf<Store>()
+                updatedList.addAll(_state.value.shopList)
+                updatedList.addAll(newPageItems)
+                storesList = ArrayList(updatedList)
+                orderSoreListByNear(context)
+                _state.update {
+                    it.copy(shopList = storesList)
+                }
+            }
+        }
+
+        suspend fun loadLessThanOneKilometresShops(context: Context) {
+            withContext(Dispatchers.Default) {
+                storesListLessThan1km.clear()
+                storeListFromApi.forEach { store ->
+                    val location = store.location
+                    val userLocation = locationService.getUserLocation(context)
+
+                    if (!location.isNullOrEmpty() && userLocation != null) {
+                        val latitude = location[1]
+                        val longitude = location[0]
+                        val userLatitude = userLocation.latitude.toDouble()
+                        val userLongitude = userLocation.longitude.toDouble()
+                        val distanceInMeters =
+                            locationService.calculateDistanceInMeters(
+                                userLatitude,
+                                userLongitude,
+                                latitude,
+                                longitude,
+                            )
+
+                        if (distanceInMeters <= 1000.0 && store.location.isNotEmpty()) {
+                            storesListLessThan1km.add(store)
+                        }
+                    }
+                }
+            }
+        }
+
+        fun showLessThan1KilometresShops(context: Context) {
+            GlobalScope.launch {
+                storesList = getElementsInGroupsOf20(storesListLessThan1km, 0)
+                orderSoreListByNear(context)
+                _state.update {
+                    it.copy(shopList = storesList)
+                }
             }
         }
 
         fun loadShopsByCategory(
             context: Context,
-            categorySelected: String,
+            categorySelected: Categories,
         ) {
             GlobalScope.launch {
                 val categories = _state.value.categoriesMap.keys
-                if (categories.contains(categorySelected)) {
+                if (categories.contains(categorySelected.toString())) {
                     // val storeListByCategory = storesList.filter { it.category == Categories.valueOf(categorySelected) }
-                    val storeListByCategory =
-                        ArrayList(
-                            storeListFromApi.filter {
-                                it.category == Categories.valueOf(categorySelected)
-                            },
-                        )
+
                     val storeListByCategoryToShow =
                         getElementsInGroupsOf20ByCategory(
-                            storeListByCategory,
-                            Categories.valueOf(categorySelected),
+                            categorySelected,
                             0,
                         )
 
@@ -165,14 +180,14 @@ class ShopListViewModel
 
         fun loadShopsByCategoryAndLessThan1km(
             context: Context,
-            categorySelected: String,
+            categorySelected: Categories,
         ) {
             GlobalScope.launch {
                 val categories = _state.value.categoriesMap.keys
-                if (categories.contains(categorySelected)) {
+                if (categories.contains(categorySelected.toString())) {
                     val storeListByCategory =
                         storesListLessThan1km.filter {
-                            it.category == Categories.valueOf(categorySelected)
+                            it.category == categorySelected
                         }
 
                     val storeListOrderedByCloseness =
@@ -217,7 +232,13 @@ class ShopListViewModel
 
                     val userLatitude = userLocation?.latitude?.toDouble() ?: 0.0
                     val userLongitude = userLocation?.longitude?.toDouble() ?: 0.0
-                    val distanceInMeters = locationService.calculateDistanceInMeters(userLatitude, userLongitude, latitude, longitude)
+                    val distanceInMeters =
+                        locationService.calculateDistanceInMeters(
+                            userLatitude,
+                            userLongitude,
+                            latitude,
+                            longitude,
+                        )
 
                     distanceInMeters
                 } else {
@@ -230,6 +251,7 @@ class ShopListViewModel
             list: ArrayList<Store>,
             page: Int,
         ): ArrayList<Store> {
+            actualPage = page
             val startIndex = page * 20
             val endIndex = startIndex + 20
             return if (startIndex < list.size) {
@@ -240,10 +262,15 @@ class ShopListViewModel
         }
 
         fun getElementsInGroupsOf20ByCategory(
-            list: ArrayList<Store>,
             category: Categories,
             page: Int,
         ): ArrayList<Store> {
+            val list =
+                ArrayList(
+                    storeListFromApi.filter {
+                        it.category == category
+                    },
+                )
             val startIndex = page * 20
             val endIndex = startIndex + 20
             return if (startIndex < list.size) {
@@ -251,5 +278,13 @@ class ShopListViewModel
             } else {
                 ArrayList()
             }
+        }
+
+        suspend fun orderSoreListByNear(context: Context) {
+            val userLocation = locationService.getUserLocation(context)
+            val storeListOrderedByCloseness =
+                sortByDistanceToUser(storesList, userLocation)
+            storesList.clear()
+            storesList.addAll(storeListOrderedByCloseness)
         }
     }
