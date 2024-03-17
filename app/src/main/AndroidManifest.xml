@@ -29,6 +29,9 @@
         <activity android:name=".presentation.usescases.shopsList.ShopListActivity">
 
         </activity>
+        <activity android:name=".presentation.usescases.shopsList.detail.ShopDetailActivity">
+
+        </activity>
     </application>
 
 </manifest>

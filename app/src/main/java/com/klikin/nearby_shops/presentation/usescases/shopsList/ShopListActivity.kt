@@ -1,6 +1,7 @@
 package com.klikin.nearby_shops.presentation.usescases.shopsList
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -12,11 +13,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.databinding.ShopListScreenBinding
+import com.klikin.nearby_shops.domain.model.Store
 import com.klikin.nearby_shops.domain.model.enums.Categories
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.CategoryAdapter
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.ShopAdapter
+import com.klikin.nearby_shops.presentation.usescases.shopsList.detail.ShopDetailActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -78,8 +82,6 @@ class ShopListActivity : AppCompatActivity() {
                         selectedCategory =
                             Categories.valueOf(viewModel.sate.value.categoriesMap.keys.toList()[position])
                         Log.d("TAG", "ITEM TOUCHED -> $selectedCategory")
-                        Log.d("TAG", "lastSelectedItemPosition -> $lastSelectedItemPosition")
-                        Log.d("TAG", "lastSelectedItemPosition -> $position")
 
                         if (card1Selected) {
                             if (position != lastSelectedItemPosition) {
@@ -105,6 +107,18 @@ class ShopListActivity : AppCompatActivity() {
                                 lastSelectedItemPosition = -1
                             }
                         }
+                    }
+                },
+            )
+
+            shopAdapter.setOnItemClickListener(
+                object : ShopAdapter.onItemClickListener {
+                    override fun onItemClick(store: Store) {
+                        Log.d("TAG", "Shop -> ${store.name}")
+                        val storeGson = Gson().toJson(store)
+                        val intent = Intent(this@ShopListActivity, ShopDetailActivity::class.java)
+                        intent.putExtra("storeJson", storeGson)
+                        startActivity(intent)
                     }
                 },
             )

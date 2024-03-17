@@ -11,4 +11,5 @@
     <color name="colorCardTitleNoTap">#F36113</color>
     <color name="colorCardTextNoTap">#4E4D4C</color>
     <color name="backgroundOnTapCategory">#C6C6C6</color>
+    <color name="text_go_to_color">#169898</color>
 </resources>

@@ -1,10 +1,15 @@
 <resources>
     <string name="app_name">Nearby-shops</string>
     <string name="shopsList_text">Listado de comercios</string>
+    <string name="shops_detail_text">Nombre del comercio</string>
     <string name="shops_text">Comercios</string>
     <string name="lees_than_1_km">A menos de 1 Km</string>
     <string name="more_than_50_km">> 50Km.</string>
     <string name="unknown_distance">Distancia desconocida</string>
     <string name="permisionAskText">Necesitas aceptar los permisos para poder usar la app.</string>
     <string name="no_near_shops">No hay comercios cercanos</string>
+    <string name="detail_location_text">Localización</string>
+    <string name="detail_go_to_map_text">Llévame aquí</string>
+    <string name="detail_about_text">Sobre el comercio</string>
+    <string name="mapbox_access_token">pk.eyJ1Ijoic2FtY2siLCJhIjoiY2x0dnh3eGVvMXN1ZTJrb2J2dHppNThuMSJ9.1csE2-NdhIR_XAyMHOq72A</string>
 </resources>

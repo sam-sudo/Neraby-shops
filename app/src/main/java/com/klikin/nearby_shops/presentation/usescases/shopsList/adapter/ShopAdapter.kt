@@ -26,6 +26,16 @@ class ShopAdapter(
     private var storeList: List<Store>,
     private var categoriesMap: Map<String, Int>,
 ) : RecyclerView.Adapter<ShopAdapter.ShopViewHolder>() {
+    private lateinit var mListener: ShopAdapter.onItemClickListener
+
+    interface onItemClickListener {
+        fun onItemClick(store: Store)
+    }
+
+    fun setOnItemClickListener(listener: ShopAdapter.onItemClickListener) {
+        mListener = listener
+    }
+
     fun updateData(
         newStoreList: List<Store>,
         newCategoriesMap: Map<String, Int>,
@@ -43,7 +53,7 @@ class ShopAdapter(
         val binding =
             ItemStoreBinding
                 .inflate(LayoutInflater.from(parent.context), parent, false)
-        return ShopViewHolder(binding, categoriesMap)
+        return ShopViewHolder(binding, categoriesMap, mListener)
     }
 
     override fun onBindViewHolder(
@@ -58,6 +68,7 @@ class ShopAdapter(
     class ShopViewHolder(
         private val binding: ItemStoreBinding,
         private var categoriesMap: Map<String, Int>,
+        private val listener: ShopAdapter.onItemClickListener,
     ) : RecyclerView.ViewHolder(
             binding.root,
         ) {
@@ -68,6 +79,13 @@ class ShopAdapter(
             val MAX_DISTANCE = 50000.0
             val colorBlanco = 0xFFFFFFFF.toInt()
             val backGroundColor: Int = categoriesMap[store.category.toString()] ?: colorBlanco
+
+            binding.root.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    listener.onItemClick(store)
+                }
+            }
 
             binding.tvStoreName.text = store.name
             binding.tvStoreOpenTime.text =
