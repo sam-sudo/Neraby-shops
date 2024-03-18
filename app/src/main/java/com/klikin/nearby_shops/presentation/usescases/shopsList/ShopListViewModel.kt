@@ -52,8 +52,8 @@ class ShopListViewModel
                 }
                 try {
                     storeListFromApi = storeRepository.getStores().body()?.toStoreList() ?: ArrayList()
-                    storesList = getElementsInGroupsOf20(storeListFromApi, 0)
                     orderSoreListByNear(context)
+                    storesList = getElementsInGroupsOf20(storeListFromApi, 0)
                 } finally {
                     _state.update {
                         it.copy(
@@ -116,7 +116,8 @@ class ShopListViewModel
         suspend fun loadLessThanOneKilometresShops(context: Context) {
             withContext(Dispatchers.Default) {
                 storesListLessThan1km.clear()
-                storeListFromApi.forEach { store ->
+                val tempOrderShops = getElementsInGroupsOf20(storeListFromApi, 0)
+                tempOrderShops.forEach { store ->
                     val location = store.location
                     val userLocation = locationService.getUserLocation(context)
 
@@ -283,8 +284,8 @@ class ShopListViewModel
         suspend fun orderSoreListByNear(context: Context) {
             val userLocation = locationService.getUserLocation(context)
             val storeListOrderedByCloseness =
-                sortByDistanceToUser(storesList, userLocation)
-            storesList.clear()
-            storesList.addAll(storeListOrderedByCloseness)
+                sortByDistanceToUser(storeListFromApi, userLocation)
+            storeListFromApi.clear()
+            storeListFromApi.addAll(storeListOrderedByCloseness)
         }
     }

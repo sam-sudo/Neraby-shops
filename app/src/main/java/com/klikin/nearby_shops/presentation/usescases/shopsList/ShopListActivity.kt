@@ -148,11 +148,14 @@ class ShopListActivity : AppCompatActivity() {
 
                         if (lastVisibleItemPosition == totalItemCount - 1 && totalItemCount >= 20) {
                             Log.d("TAG", "onScrolled: nextPage")
-                            if (lastSelectedItemPosition == -1) {
-                                viewModel.showShopsNextPage(this@ShopListActivity)
-                            } else {
-                                viewModel.showShopsNextPageByCategory(this@ShopListActivity, selectedCategory)
-                            }
+                            if (card1Selected)
+                                {
+                                    if (lastSelectedItemPosition == -1) {
+                                        viewModel.showShopsNextPage(this@ShopListActivity)
+                                    } else {
+                                        viewModel.showShopsNextPageByCategory(this@ShopListActivity, selectedCategory)
+                                    }
+                                }
                         }
                     }
                 },
