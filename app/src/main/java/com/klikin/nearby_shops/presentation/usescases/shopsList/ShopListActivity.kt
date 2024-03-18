@@ -32,7 +32,7 @@ class ShopListActivity : AppCompatActivity() {
     private var card2Selected = false
     var lastSelectedItemPosition = RecyclerView.NO_POSITION
     var selectedCategory = Categories.UNKNOWN
-    private var detailShown = false
+    private var showDetailFromDeepLink = false
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
@@ -238,36 +238,17 @@ class ShopListActivity : AppCompatActivity() {
         if (intent?.action == Intent.ACTION_VIEW) {
             Log.d("TAG", "ACTION_VIEW: ")
             handleDeepLink(intent)
+            intent = null
         }
-
-        /*val intentData = intent.data
-        Log.d("tag", "intentData +$intentData")
-        if (intentData != null && intentData.scheme == "https" && intentData.host == "shops.detail") {
-            val shopId = intentData.lastPathSegment
-            val storeGson = Gson().toJson(viewModel.storeListFromApi.find { it.id.toString() == shopId })
-            Log.d("TAG", "onCreate: iewModel.storeListFromApi --> ${viewModel.storeListFromApi.find { it.id.toString() == shopId }}")
-            Log.d("TAG", "onCreate: shopId --> $shopId")
-            Log.d("TAG", "onCreate: storeGson --> $storeGson")
-            if (!storeGson.isNullOrEmpty()) {
-                val intent = Intent(this@ShopListActivity, ShopDetailActivity::class.java)
-                Log.d("TAG", "onCreate: storeGson --> $storeGson")
-                intent.putExtra("storeJson", storeGson)
-                startActivity(intent)
-                detailShown = true
-            }
-        }*/
     }
 
     fun handleDeepLink(intent: Intent) {
         val intentData = intent.data
+        Log.d("TAG", "onCreate:intentData --> $intentData")
 
         if (intentData != null && intentData.scheme == "https" && intentData.host == "shops.detail") {
             val shopId = intentData.lastPathSegment
             val storeGson = Gson().toJson(viewModel.storeListFromApi.find { it.id.toString() == shopId })
-            Log.d("TAG", "onCreate: iewModel.storeListFromApi --> ${viewModel.storeListFromApi.find { it.id.toString() == shopId }}")
-
-            Log.d("TAG", "onCreate: shopId --> $shopId")
-            Log.d("TAG", "onCreate: storeGson --> $storeGson")
             if (!storeGson.isNullOrEmpty()) {
                 val intent = Intent(this@ShopListActivity, ShopDetailActivity::class.java)
                 intent.putExtra("storeJson", storeGson)
