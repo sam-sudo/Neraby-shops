@@ -85,6 +85,7 @@
                     android:textSize="15sp" />
 
                 <TextView
+                    android:id="@+id/tv_got_to_map"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -141,14 +142,50 @@
                     android:layout_height="match_parent">
 
                     <LinearLayout
+                        android:padding="4pt"
+                        android:gravity="center"
+                        android:orientation="vertical"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
                         <TextView
+                            android:id="@+id/tv_country"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:textSize="12sp"
+                            android:text="@string/shop_detail_tv_country"
+                            />
 
+                        <TextView
+                            android:id="@+id/tv_street"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:text="@string/shop_detail_tv_street"
+                            />
+
+                        <TextView
+                            android:id="@+id/tv_city"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:text="@string/shop_detail_tv_city"
+                            />
+
+                        <TextView
+                            android:id="@+id/tv_state"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:text="@string/shop_detail_tv_state"
+                            />
+
+                        <TextView
+                            android:id="@+id/tv_zip"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:text="@string/shop_detail_tv_zip"
                             />
 
                     </LinearLayout>
@@ -158,9 +195,10 @@
 
             <LinearLayout
                 android:layout_weight="1"
+                android:layout_marginStart="4pt"
+                android:layout_marginEnd="4pt"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="4pt"
                 android:orientation="vertical">
 
                 <TextView
@@ -175,14 +213,17 @@
 
                 <androidx.cardview.widget.CardView
                     app:cardCornerRadius="10dp"
+                    android:layout_margin="2pt"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
                     <LinearLayout
+                        android:padding="4pt"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
                         <TextView
+                            android:id="@+id/tv_about_shop"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:textSize="12sp"

@@ -68,13 +68,13 @@ class ShopDetailActivity : AppCompatActivity() {
         val longitude = store.location?.get(0) ?: 0.0
         val mapView = binding.mapView
         val mapboxMap = mapView.mapboxMap
-        val CAMERA_TARGET =
+        val cameraTarget =
             cameraOptions {
                 center(Point.fromLngLat(longitude, latitude))
-                zoom(3.0)
+                zoom(1.0)
             }
 
-        mapboxMap.setCamera(CAMERA_TARGET)
+        mapboxMap.setCamera(cameraTarget)
         mapboxMap.loadStyle(
             Style.STANDARD,
         ) {
@@ -87,7 +87,7 @@ class ShopDetailActivity : AppCompatActivity() {
                 val zoom =
                     createZoomAnimator(
                         cameraAnimatorOptions(14.0) {
-                            startValue(3.0)
+                            startValue(1.0)
                         },
                     ) {
                         duration = 4000
@@ -105,5 +105,43 @@ class ShopDetailActivity : AppCompatActivity() {
                 playAnimatorsSequentially(zoom)
             }
         }
+
+        val btnGoToMap = binding.tvGotToMap
+        btnGoToMap.setOnClickListener {
+            val targetLocation =
+                cameraOptions {
+                    center(Point.fromLngLat(longitude, latitude))
+                }
+            mapboxMap.setCamera(targetLocation)
+            mapboxMap.loadStyle(
+                Style.STANDARD,
+            ) {
+                mapView.camera.apply {
+                    val zoom =
+                        createZoomAnimator(
+                            cameraAnimatorOptions(14.0) {
+                                // startValue(3.0)
+                            },
+                        ) {
+                            duration = 4000
+                            interpolator = AccelerateDecelerateInterpolator()
+                        }
+                    playAnimatorsSequentially(zoom)
+                }
+            }
+        }
+
+        val tvAboutShop = binding.tvAboutShop
+        val tvCountry = binding.tvCountry
+        val tvStreet = binding.tvStreet
+        val tvCity = binding.tvCity
+        val tvState = binding.tvState
+        val tvZip = binding.tvZip
+        tvAboutShop.text = store.openingHours
+        tvCountry.append(store.address?.country ?: "Unknown")
+        tvStreet.append(store.address?.street ?: "Unknown")
+        tvCity.append(store.address?.city ?: "Unknown")
+        tvState.append(store.address?.state ?: "Unknown")
+        tvZip.append(store.address?.zip ?: "Unknown")
     }
 }

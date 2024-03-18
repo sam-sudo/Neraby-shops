@@ -12,4 +12,9 @@
     <string name="detail_go_to_map_text">Llévame aquí</string>
     <string name="detail_about_text">Sobre el comercio</string>
     <string name="mapbox_access_token">pk.eyJ1Ijoic2FtY2siLCJhIjoiY2x0dnh3eGVvMXN1ZTJrb2J2dHppNThuMSJ9.1csE2-NdhIR_XAyMHOq72A</string>
+    <string name="shop_detail_tv_country"><![CDATA[Country ->]]></string>
+    <string name="shop_detail_tv_city"><![CDATA[City ->]]></string>
+    <string name="shop_detail_tv_street"><![CDATA[Street ->]]></string>
+    <string name="shop_detail_tv_state"><![CDATA[State ->]]></string>
+    <string name="shop_detail_tv_zip"><![CDATA[Zip ->]]></string>
 </resources>
