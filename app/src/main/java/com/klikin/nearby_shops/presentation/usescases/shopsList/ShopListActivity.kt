@@ -32,6 +32,14 @@ class ShopListActivity : AppCompatActivity() {
     private var card2Selected = false
     var lastSelectedItemPosition = RecyclerView.NO_POSITION
     var selectedCategory = Categories.UNKNOWN
+    private var detailShown = false
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let {
+            handleDeepLink(intent)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -195,6 +203,7 @@ class ShopListActivity : AppCompatActivity() {
                         binding.shimmerView.startShimmer()
                         binding.shimmerCategoryView.startShimmer()
                     } else {
+                        checkToShowDetailFromDeepLink()
                         binding.shimmerView.visibility = View.GONE
                         binding.shimmerCategoryView.visibility = View.GONE
                         binding.shimmerShopsCards.visibility = View.GONE
@@ -220,6 +229,49 @@ class ShopListActivity : AppCompatActivity() {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    fun checkToShowDetailFromDeepLink() {
+        Log.d("TAG", "checkToShowDetailFromDeepLink: ")
+        if (intent?.action == Intent.ACTION_VIEW) {
+            Log.d("TAG", "ACTION_VIEW: ")
+            handleDeepLink(intent)
+        }
+
+        /*val intentData = intent.data
+        Log.d("tag", "intentData +$intentData")
+        if (intentData != null && intentData.scheme == "https" && intentData.host == "shops.detail") {
+            val shopId = intentData.lastPathSegment
+            val storeGson = Gson().toJson(viewModel.storeListFromApi.find { it.id.toString() == shopId })
+            Log.d("TAG", "onCreate: iewModel.storeListFromApi --> ${viewModel.storeListFromApi.find { it.id.toString() == shopId }}")
+            Log.d("TAG", "onCreate: shopId --> $shopId")
+            Log.d("TAG", "onCreate: storeGson --> $storeGson")
+            if (!storeGson.isNullOrEmpty()) {
+                val intent = Intent(this@ShopListActivity, ShopDetailActivity::class.java)
+                Log.d("TAG", "onCreate: storeGson --> $storeGson")
+                intent.putExtra("storeJson", storeGson)
+                startActivity(intent)
+                detailShown = true
+            }
+        }*/
+    }
+
+    fun handleDeepLink(intent: Intent) {
+        val intentData = intent.data
+
+        if (intentData != null && intentData.scheme == "https" && intentData.host == "shops.detail") {
+            val shopId = intentData.lastPathSegment
+            val storeGson = Gson().toJson(viewModel.storeListFromApi.find { it.id.toString() == shopId })
+            Log.d("TAG", "onCreate: iewModel.storeListFromApi --> ${viewModel.storeListFromApi.find { it.id.toString() == shopId }}")
+
+            Log.d("TAG", "onCreate: shopId --> $shopId")
+            Log.d("TAG", "onCreate: storeGson --> $storeGson")
+            if (!storeGson.isNullOrEmpty()) {
+                val intent = Intent(this@ShopListActivity, ShopDetailActivity::class.java)
+                intent.putExtra("storeJson", storeGson)
+                startActivity(intent)
             }
         }
     }
