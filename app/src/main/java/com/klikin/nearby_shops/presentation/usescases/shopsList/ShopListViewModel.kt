@@ -79,7 +79,10 @@ class ShopListViewModel
             viewModelScope.launch {
                 actualPage += 20
                 val newPageItems = getElementsInGroupsOf20(context, storeListFromApi, actualPage)
-                storesList = newPageItems
+                val updatedList = mutableListOf<Store>()
+                updatedList.addAll(_state.value.shopList)
+                updatedList.addAll(newPageItems)
+                storesList = ArrayList(updatedList)
                 _state.update {
                     it.copy(shopList = storesList)
                 }
@@ -93,12 +96,12 @@ class ShopListViewModel
             viewModelScope.launch {
                 actualPage += 20
                 val newPageItems = getElementsInGroupsOf20ByCategory(context, category, actualPage)
-                // val updatedList = mutableListOf<Store>()
-                // updatedList.addAll(_state.value.shopList)
-                // updatedList.addAll(newPageItems)
-                storesList = newPageItems
+                val updatedList = mutableListOf<Store>()
+                updatedList.addAll(_state.value.shopList)
+                updatedList.addAll(newPageItems)
+                storesList = ArrayList(updatedList)
                 _state.update {
-                    it.copy(shopList = newPageItems)
+                    it.copy(shopList = storesList)
                 }
             }
         }
