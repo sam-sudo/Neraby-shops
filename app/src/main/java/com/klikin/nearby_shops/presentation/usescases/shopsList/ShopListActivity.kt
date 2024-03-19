@@ -18,6 +18,7 @@ import com.klikin.nearby_shops.R
 import com.klikin.nearby_shops.databinding.ShopListScreenBinding
 import com.klikin.nearby_shops.domain.model.Store
 import com.klikin.nearby_shops.domain.model.enums.Categories
+import com.klikin.nearby_shops.framework.LocationService
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.CategoryAdapter
 import com.klikin.nearby_shops.presentation.usescases.shopsList.adapter.ShopAdapter
 import com.klikin.nearby_shops.presentation.usescases.shopsList.detail.ShopDetailActivity
@@ -32,7 +33,7 @@ class ShopListActivity : AppCompatActivity() {
     private var card2Selected = false
     var lastSelectedItemPosition = RecyclerView.NO_POSITION
     var selectedCategory = Categories.UNKNOWN
-    private var showDetailFromDeepLink = false
+    private val locationService = LocationService()
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
@@ -79,7 +80,7 @@ class ShopListActivity : AppCompatActivity() {
             llShopListScreen.visibility = View.VISIBLE
             llSnoPermissionsScreen.visibility = View.GONE
 
-            viewModel.loadShops(this)
+            viewModel.loadShops(this@ShopListActivity)
 
             categoryAdapter.setOnItemClickListener(
                 object : CategoryAdapter.onItemClickListener {
@@ -148,14 +149,13 @@ class ShopListActivity : AppCompatActivity() {
 
                         if (lastVisibleItemPosition == totalItemCount - 1 && totalItemCount >= 20) {
                             Log.d("TAG", "onScrolled: nextPage")
-                            if (card1Selected)
-                                {
-                                    if (lastSelectedItemPosition == -1) {
-                                        viewModel.showShopsNextPage(this@ShopListActivity)
-                                    } else {
-                                        viewModel.showShopsNextPageByCategory(this@ShopListActivity, selectedCategory)
-                                    }
+                            if (card1Selected) {
+                                if (lastSelectedItemPosition == -1) {
+                                    viewModel.showShopsNextPage(this@ShopListActivity)
+                                } else {
+                                    viewModel.showShopsNextPageByCategory(this@ShopListActivity, selectedCategory)
                                 }
+                            }
                         }
                     }
                 },

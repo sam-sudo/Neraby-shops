@@ -1,21 +1,18 @@
 package com.klikin.nearby_shops.presentation.usescases.shopsList
 
 import android.content.Context
-import android.location.Location
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.klikin.nearby_shops.domain.mapper.toStoreList
 import com.klikin.nearby_shops.domain.model.Store
 import com.klikin.nearby_shops.domain.model.enums.Categories
 import com.klikin.nearby_shops.domain.repository.RemoteStoreRepository
 import com.klikin.nearby_shops.framework.LocationService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,12 +23,12 @@ class ShopListViewModel
     ) : ViewModel() {
         private val _state = MutableStateFlow(ShopListViewState())
         val sate = _state.asStateFlow()
-        var storeListFromApi = ArrayList<Store>()
-        var storesList = ArrayList<Store>()
-        val storesListLessThan1km = ArrayList<Store>()
-        var actualPage = 0
 
-        private val locationService = LocationService()
+        private var locationService: LocationService = LocationService()
+        private var actualPage = 0
+        private var storesList = ArrayList<Store>()
+        var storeListFromApi = ArrayList<Store>()
+        val storesListLessThan1km = ArrayList<Store>()
 
         val rainbowColorsArgb =
             listOf(
@@ -46,14 +43,13 @@ class ShopListViewModel
             )
 
         fun loadShops(context: Context) {
-            GlobalScope.launch {
+            viewModelScope.launch {
                 _state.update {
                     it.copy(isLoading = true)
                 }
                 try {
                     storeListFromApi = storeRepository.getStores().body()?.toStoreList() ?: ArrayList()
-                    orderSoreListByNear(context)
-                    storesList = getElementsInGroupsOf20(storeListFromApi, 0)
+                    storesList = getElementsInGroupsOf20(context, storeListFromApi, 0)
                 } finally {
                     _state.update {
                         it.copy(
@@ -71,9 +67,8 @@ class ShopListViewModel
             context: Context,
             pageIndex: Int,
         ) {
-            GlobalScope.launch {
-                storesList = getElementsInGroupsOf20(storeListFromApi, pageIndex)
-                orderSoreListByNear(context)
+            viewModelScope.launch {
+                storesList = getElementsInGroupsOf20(context, storeListFromApi, pageIndex)
                 _state.update {
                     it.copy(shopList = storesList)
                 }
@@ -81,14 +76,10 @@ class ShopListViewModel
         }
 
         fun showShopsNextPage(context: Context) {
-            GlobalScope.launch {
+            viewModelScope.launch {
                 actualPage += 20
-                val newPageItems = getElementsInGroupsOf20(storeListFromApi, actualPage)
-                val updatedList = mutableListOf<Store>()
-                updatedList.addAll(_state.value.shopList)
-                updatedList.addAll(newPageItems)
-                storesList = ArrayList(updatedList)
-                orderSoreListByNear(context)
+                val newPageItems = getElementsInGroupsOf20(context, storeListFromApi, actualPage)
+                storesList = newPageItems
                 _state.update {
                     it.copy(shopList = storesList)
                 }
@@ -99,33 +90,32 @@ class ShopListViewModel
             context: Context,
             category: Categories,
         ) {
-            GlobalScope.launch {
+            viewModelScope.launch {
                 actualPage += 20
-                val newPageItems = getElementsInGroupsOf20ByCategory(category, actualPage)
-                val updatedList = mutableListOf<Store>()
-                updatedList.addAll(_state.value.shopList)
-                updatedList.addAll(newPageItems)
-                storesList = ArrayList(updatedList)
-                orderSoreListByNear(context)
+                val newPageItems = getElementsInGroupsOf20ByCategory(context, category, actualPage)
+                // val updatedList = mutableListOf<Store>()
+                // updatedList.addAll(_state.value.shopList)
+                // updatedList.addAll(newPageItems)
+                storesList = newPageItems
                 _state.update {
-                    it.copy(shopList = storesList)
+                    it.copy(shopList = newPageItems)
                 }
             }
         }
 
-        suspend fun loadLessThanOneKilometresShops(context: Context) {
-            withContext(Dispatchers.Default) {
+        private suspend fun loadLessThanOneKilometresShops(context: Context) {
+            viewModelScope.launch {
+                val userLocation = locationService.getUserLocation(context)
                 storesListLessThan1km.clear()
-                val tempOrderShops = getElementsInGroupsOf20(storeListFromApi, 0)
+                val tempOrderShops = getElementsInGroupsOf20(context, storeListFromApi, 0)
                 tempOrderShops.forEach { store ->
                     val location = store.location
-                    val userLocation = locationService.getUserLocation(context)
 
                     if (!location.isNullOrEmpty() && userLocation != null) {
                         val latitude = location[1]
                         val longitude = location[0]
-                        val userLatitude = userLocation.latitude.toDouble()
-                        val userLongitude = userLocation.longitude.toDouble()
+                        val userLatitude = userLocation.latitude
+                        val userLongitude = userLocation.longitude
                         val distanceInMeters =
                             locationService.calculateDistanceInMeters(
                                 userLatitude,
@@ -143,38 +133,10 @@ class ShopListViewModel
         }
 
         fun showLessThan1KilometresShops(context: Context) {
-            GlobalScope.launch {
-                storesList = getElementsInGroupsOf20(storesListLessThan1km, 0)
-                orderSoreListByNear(context)
+            viewModelScope.launch {
+                storesList = getElementsInGroupsOf20(context, storesListLessThan1km, 0)
                 _state.update {
                     it.copy(shopList = storesList)
-                }
-            }
-        }
-
-        fun loadShopsByCategory(
-            context: Context,
-            categorySelected: Categories,
-        ) {
-            GlobalScope.launch {
-                val categories = _state.value.categoriesMap.keys
-                if (categories.contains(categorySelected.toString())) {
-                    // val storeListByCategory = storesList.filter { it.category == Categories.valueOf(categorySelected) }
-
-                    val storeListByCategoryToShow =
-                        getElementsInGroupsOf20ByCategory(
-                            categorySelected,
-                            0,
-                        )
-
-                    val storeListOrderedByCloseness =
-                        sortByDistanceToUser(
-                            storeListByCategoryToShow,
-                            locationService.getUserLocation(context),
-                        )
-                    _state.update {
-                        it.copy(shopList = storeListOrderedByCloseness)
-                    }
                 }
             }
         }
@@ -183,28 +145,43 @@ class ShopListViewModel
             context: Context,
             categorySelected: Categories,
         ) {
-            GlobalScope.launch {
+            viewModelScope.launch {
                 val categories = _state.value.categoriesMap.keys
                 if (categories.contains(categorySelected.toString())) {
                     val storeListByCategory =
                         storesListLessThan1km.filter {
                             it.category == categorySelected
                         }
-
-                    val storeListOrderedByCloseness =
-                        sortByDistanceToUser(
-                            storeListByCategory,
-                            locationService.getUserLocation(context),
-                        )
-
+                    storesList = getElementsInGroupsOf20(context, ArrayList(storeListByCategory), 0)
                     _state.update {
-                        it.copy(shopList = storeListOrderedByCloseness)
+                        it.copy(shopList = storesList)
                     }
                 }
             }
         }
 
-        fun loadCategories() {
+        fun loadShopsByCategory(
+            context: Context,
+            categorySelected: Categories,
+        ) {
+            viewModelScope.launch {
+                val categories = _state.value.categoriesMap.keys
+                if (categories.contains(categorySelected.toString())) {
+                    // val storeListByCategory = storesList.filter { it.category == Categories.valueOf(categorySelected) }
+                    val storeListByCategoryToShow =
+                        getElementsInGroupsOf20ByCategory(
+                            context,
+                            categorySelected,
+                            0,
+                        )
+                    _state.update {
+                        it.copy(shopList = storeListByCategoryToShow)
+                    }
+                }
+            }
+        }
+
+        private fun loadCategories() {
             val colors = rainbowColorsArgb
             // this was to make dinamics list
             // val uniqueCategories = _state.value.shopList.map { it.category }.toSet()
@@ -220,19 +197,21 @@ class ShopListViewModel
             _state.update { it.copy(categoriesMap = categoriesMap) }
         }
 
-        fun sortByDistanceToUser(
+        private suspend fun sortByDistanceToUser(
+            context: Context,
             storeList: List<Store>,
-            userLocation: Location?,
         ): List<Store> {
+            val userLocation = locationService.getUserLocation(context)
+            if (userLocation == null || userLocation.latitude == null || userLocation.longitude == null) {
+                return storeList
+            }
+            val userLatitude = userLocation.latitude
+            val userLongitude = userLocation.longitude
             return storeList.sortedBy { store ->
                 val location = store.location
-
                 if (!location.isNullOrEmpty()) {
                     val latitude = location[1]
                     val longitude = location[0]
-
-                    val userLatitude = userLocation?.latitude?.toDouble() ?: 0.0
-                    val userLongitude = userLocation?.longitude?.toDouble() ?: 0.0
                     val distanceInMeters =
                         locationService.calculateDistanceInMeters(
                             userLatitude,
@@ -248,44 +227,56 @@ class ShopListViewModel
             }
         }
 
-        fun getElementsInGroupsOf20(
+        private suspend fun getElementsInGroupsOf20(
+            context: Context,
             list: ArrayList<Store>,
             page: Int,
         ): ArrayList<Store> {
             actualPage = page
             val startIndex = page * 20
             val endIndex = startIndex + 20
-            return if (startIndex < list.size) {
-                ArrayList(list.subList(startIndex, Math.min(endIndex, list.size)))
+
+            if (startIndex < list.size) {
+                val tempList = ArrayList(sortByDistanceToUser(context, list))
+                return ArrayList(tempList.subList(startIndex, Math.min(endIndex, tempList.size)))
             } else {
-                ArrayList()
+                return ArrayList()
             }
         }
 
-        fun getElementsInGroupsOf20ByCategory(
+        private suspend fun getElementsInGroupsOf20ByCategory(
+            context: Context,
             category: Categories,
             page: Int,
+            list: ArrayList<Store>? = ArrayList(),
         ): ArrayList<Store> {
-            val list =
-                ArrayList(
+            var tempListByCategory = listOf<Store>()
+
+            if (list.isNullOrEmpty()) {
+                tempListByCategory =
                     storeListFromApi.filter {
                         it.category == category
-                    },
-                )
+                    }
+            } else {
+                tempListByCategory =
+                    list.filter {
+                        it.category == category
+                    }
+            }
+
             val startIndex = page * 20
             val endIndex = startIndex + 20
-            return if (startIndex < list.size) {
-                ArrayList(list.subList(startIndex, Math.min(endIndex, list.size)))
+
+            return if (startIndex < tempListByCategory.size) {
+                val tempList = ArrayList(sortByDistanceToUser(context, tempListByCategory))
+                ArrayList(
+                    tempList.subList(
+                        startIndex,
+                        Math.min(endIndex, tempList.size),
+                    ),
+                )
             } else {
                 ArrayList()
             }
-        }
-
-        suspend fun orderSoreListByNear(context: Context) {
-            val userLocation = locationService.getUserLocation(context)
-            val storeListOrderedByCloseness =
-                sortByDistanceToUser(storeListFromApi, userLocation)
-            storeListFromApi.clear()
-            storeListFromApi.addAll(storeListOrderedByCloseness)
         }
     }
