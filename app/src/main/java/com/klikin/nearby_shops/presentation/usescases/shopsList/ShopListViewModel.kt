@@ -255,7 +255,7 @@ class ShopListViewModel
         ): ArrayList<Store> {
             var tempListByCategory = listOf<Store>()
 
-            if (list.isNullOrEmpty()) {
+            if (list.isNullOrEmpty() || list.size == 0) {
                 tempListByCategory =
                     storeListFromApi.filter {
                         it.category == category
